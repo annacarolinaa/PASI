@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../assets/logo-pasi.png';
+import { BotaoTema } from '../components/Tema';
 import { useAuth } from '../auth/AuthContext';
 import { primeiroAcesso } from '../api/auth';
 import { mensagemErro } from '../api/client';
@@ -82,6 +83,7 @@ export function PrimeiroAcesso() {
       </section>
 
       <main className="form-side">
+        <BotaoTema />
         <form
           className="box"
           onSubmit={(e) => {

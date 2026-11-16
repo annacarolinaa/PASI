@@ -1,0 +1,233 @@
+/* PASI — Painel do Profissional · TEMA ESCURO (camada adicional)
+   Portado do canvas "PASI — Painel do Profissional (Web) · Modo escuro".
+   Não altera nenhum valor do tema claro: tudo aqui só vale com <html data-theme="dark">.
+   O atributo é definido por src/lib/tema.ts (preferência do sistema operacional, ou a
+   escolha feita em "Aparência"), e antes da primeira pintura por um script no index.html.
+   Regra: --White continua branco (texto sobre botões e selos); as superfícies usam --Surface-*.
+   Seletores com html[data-theme="dark"] para vencer o bundle de componentes. */
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Superfícies (do mais fundo ao mais alto) */
+  --Background: #0b1424;          /* fundo da página */
+  --Background-page: #0b1424;
+  --Surface: #111d31;             /* cards, menu lateral, campos */
+  --Surface-2: #16243c;           /* cabeçalho de tabela, hover, áreas internas */
+  --Surface-3: #1b2b47;           /* janelas, menus suspensos */
+
+  /* Texto: a escala navy vira a escala de títulos claros */
+  --Navy: #f1f5fc; --Navy-900: #f1f5fc; --Navy-800: #eaf0fa; --Navy-700: #e3eaf7; --Navy-600: #d8e2f3; --Navy-500: #cfdaee; --Slate: #a9bcdc;
+  --Ink: #e4ebf7;
+  --Text-muted: #9cabc4; --Text-cta: #9cabc4; --Text-intro: #93a2bc; --Text-subtle: #93a2bc; --Text-caption: #8b9bb5;
+
+  /* Azuis: texto e links clareiam; preenchimentos ficam como no claro (texto branco ≥ 4.5:1) */
+  --Link: #84b3ff; --Focus: #5c9dff; --Blue: #5b95f2; --Blue-strong: #3b8cf0;
+  --Action: #2f70df; --Action-hover: #3a7be8; --Action-pressed: #1d5fcf;
+
+  /* Azuis suaves → tons de azul-marinho */
+  --Softblue: #1a2f52; --Softblue-2: #162a49; --Softblue-cta: #1a2f52; --Softblue-label: #213a64; --Selected-bg: #1a2f52; --Numeral: #16243c;
+
+  /* Linhas e bordas */
+  --Line: #2a3b59; --Border-card: #233350; --Border-control: #2c3e5e; --Dot: #2c3e5e;
+  --Border-input: #4d6286; --Border-input-hover: #7389ad;
+
+  /* Funcionais */
+  --Error: #ff8a8d; --Error-bg: #3a171b; --Error-hover: #b3262e;
+  --Success: #74d396; --Success-bg: #10301f;
+  --Warning: #ffd27a; --Warning-bg: #33280c;
+  --Green: #85c48f; --Coral: #ff6265; --Yellow: #f6c84c;
+
+  /* Desabilitado, esqueleto, avisos */
+  --Disabled-bg: #172235; --Disabled-text: #6e7f9b; --Disabled-border: #26354e;
+  --Skeleton: #1a2840; --Skeleton-highlight: #233452;
+  --Toast-bg: #26395c; --Scrim: rgba(2, 8, 18, .72); --Overlay: rgba(3, 10, 22, .9);
+
+  /* Sombras: no escuro a elevação vem mais da superfície do que da sombra */
+  --shadow-card: 0 10px 30px rgba(0, 0, 0, .28); --shadow-card-hover: 0 15px 35px rgba(0, 0, 0, .38);
+
+  /* Fundos fixos que antes vinham da escala navy */
+  --Tip-bg: #2a3e63;      /* tooltips */
+  --Closed-bg: #2b3e60;   /* selo Encerrado / Perfil Máximo */
+}
+
+html[data-theme="dark"] body { background: var(--Background); color: var(--Ink); }
+html[data-theme="dark"] .ps a:not([class]) { color: var(--Link); }
+html[data-theme="dark"] .ps a:not([class]):hover { color: #b3d0ff; }
+html[data-theme="dark"] .ps input::placeholder, html[data-theme="dark"] .ps textarea::placeholder { color: var(--Text-muted); opacity: 1; }
+
+/* Logo: versão clara (oficial, do manual da marca) no escuro; no claro continua a logo atual */
+html[data-theme="dark"] .side .brand img, html[data-theme="dark"] .auth .box img.logo { content: url("../assets/logo-pasi-clara.png"); }
+
+/* ---------- Superfícies que eram branco ---------- */
+html[data-theme="dark"] .side, html[data-theme="dark"] .panel, html[data-theme="dark"] .item, html[data-theme="dark"] .ps-card, html[data-theme="dark"] .ps-state, html[data-theme="dark"] .ps-file, html[data-theme="dark"] .ps-drop,
+html[data-theme="dark"] .ps-choice, html[data-theme="dark"] .ps-notif, html[data-theme="dark"] .ps-bell, html[data-theme="dark"] .ld-quote { background: var(--Surface); }
+html[data-theme="dark"] .ps-control, html[data-theme="dark"] .ps-search, html[data-theme="dark"] .ps-chip, html[data-theme="dark"] .ps-box { background: var(--Surface-2); }
+html[data-theme="dark"] .ps-control.is-disabled { background: var(--Disabled-bg); }
+html[data-theme="dark"] .ps-control.is-readonly { background: var(--Background); }
+html[data-theme="dark"] .ps-menu, html[data-theme="dark"] .ms-menu, html[data-theme="dark"] .ps-popover, html[data-theme="dark"] .ps-cal, html[data-theme="dark"] .ps-modal, html[data-theme="dark"] .ps-drawer, html[data-theme="dark"] .ps-sheet { background: var(--Surface-3); }
+html[data-theme="dark"] .ms-menu { box-shadow: 0 12px 28px rgba(0, 0, 0, .45); }
+html[data-theme="dark"] .ps .ps-modal footer { background: rgba(22, 36, 60, .94); }
+html[data-theme="dark"] .ps-modal { box-shadow: 0 24px 60px rgba(0, 0, 0, .55); }
+html[data-theme="dark"] .is-checked > .ps-box.radio { background: var(--Surface-2); }
+html[data-theme="dark"] .ps-step .dot, html[data-theme="dark"] .ps-tl .dot { background: var(--Surface); }
+html[data-theme="dark"] .ps-file.is-error .fi { background: var(--Surface); }
+html[data-theme="dark"] .ps-bell .ps-count, html[data-theme="dark"] .ps .ps-btn.btn-filtro .ps-count { border-color: var(--Surface); }
+html[data-theme="dark"] .ps-choice.is-checked { background: var(--Selected-bg); }
+html[data-theme="dark"] .ps-notif.unread { background: var(--Softblue-2); }
+html[data-theme="dark"] .tbl th { background: var(--Surface-2); }
+html[data-theme="dark"] .tbl tbody tr:hover td { background: #142440; }
+
+/* Botões */
+html[data-theme="dark"] .ps-btn.secondary { background: transparent; color: var(--Link); }
+html[data-theme="dark"] .ps-btn.danger { background: #c42b33; color: #fff; }
+html[data-theme="dark"] .ps-btn.danger:hover, html[data-theme="dark"] .ps-btn.danger.is-hover { background: #a8222a; }
+html[data-theme="dark"] .ps-btn.danger-outline { background: transparent; }
+html[data-theme="dark"] .ps-btn.is-success { background: #256b42; color: #fff; }
+html[data-theme="dark"] .ps-count { background: #d93a40; color: #fff; }
+html[data-theme="dark"] .ps-tab .ps-count { background: var(--Softblue); color: var(--Link); }
+html[data-theme="dark"] .ps .ps-btn.cancelar { background: transparent; color: #ff9a9c; border-color: color-mix(in srgb, #ff8a8d 45%, var(--Surface)); }
+html[data-theme="dark"] .ps .ps-btn.cancelar:hover, html[data-theme="dark"] .ps .ps-btn.cancelar:focus-visible { background: #c42b33; border-color: #c42b33; color: #fff; }
+html[data-theme="dark"] .ps .ps-btn[disabled], html[data-theme="dark"] .ps .ps-btn.is-disabled { background: var(--Disabled-bg); color: var(--Disabled-text); border-color: var(--Disabled-border); }
+
+/* Botão de filtros: cor do título fechado, azul aberto */
+html[data-theme="dark"] .ps .ps-btn.btn-filtro, html[data-theme="dark"] .ps .ps-btn.btn-filtro:hover, html[data-theme="dark"] .ps .ps-btn.btn-filtro:focus-visible { color: var(--Navy-600); }
+html[data-theme="dark"] .ps .ps-btn.btn-filtro:hover, html[data-theme="dark"] .ps .ps-btn.btn-filtro:focus-visible { background: var(--Softblue); }
+html[data-theme="dark"] .ps .ps-btn.btn-filtro.is-active, html[data-theme="dark"] .ps .ps-btn.btn-filtro.is-active:hover { color: var(--Link); }
+
+/* ---------- Contornos: misturas com a superfície em vez de branco ---------- */
+html[data-theme="dark"] .ps .ps-alert.info { border-color: color-mix(in srgb, var(--Link) 38%, var(--Surface)); }
+html[data-theme="dark"] .ps .ps-alert.success { border-color: color-mix(in srgb, var(--Success) 38%, var(--Surface)); }
+html[data-theme="dark"] .ps .ps-alert.warning { border-color: color-mix(in srgb, var(--Warning) 38%, var(--Surface)); }
+html[data-theme="dark"] .ps .ps-alert.error { border-color: color-mix(in srgb, var(--Error) 38%, var(--Surface)); }
+html[data-theme="dark"] .ps-alert .body { color: var(--Navy-600); }
+html[data-theme="dark"] .ps .ps-choice.is-checked { border-color: color-mix(in srgb, var(--Link) 55%, var(--Surface)); box-shadow: none; }
+html[data-theme="dark"] .ps .ps-chip.is-selected, html[data-theme="dark"] .ps .ps-card.is-selected, html[data-theme="dark"] .ps .ps-drop.is-drag, html[data-theme="dark"] .ps .un-row.is-on { border-color: color-mix(in srgb, var(--Link) 55%, var(--Surface)); }
+html[data-theme="dark"] .ps .ps-btn.secondary { border-color: color-mix(in srgb, var(--Link) 50%, var(--Surface)); }
+html[data-theme="dark"] .ps .ps-btn.secondary:hover { border-color: color-mix(in srgb, var(--Link) 75%, var(--Surface)); background: var(--Softblue); }
+html[data-theme="dark"] .ps .ps-control, html[data-theme="dark"] .ps .ps-search, html[data-theme="dark"] .ps .ps-chip { border-color: var(--Border-control); }
+html[data-theme="dark"] .ps .ps-control:hover, html[data-theme="dark"] .ps .ps-search:hover { border-color: var(--Border-input); }
+html[data-theme="dark"] .ps .ps-control.is-error { border-color: color-mix(in srgb, var(--Error) 75%, var(--Surface)); }
+html[data-theme="dark"] .ps .ps-control.is-success { border-color: color-mix(in srgb, var(--Success) 75%, var(--Surface)); }
+html[data-theme="dark"] .ps .ps-control:focus-within, html[data-theme="dark"] .ps .ps-control.is-focus, html[data-theme="dark"] .ps .ps-search:focus-within, html[data-theme="dark"] .ps .ps-search.is-focus { border-color: var(--Focus); box-shadow: 0 0 0 3px rgba(92, 157, 255, .22); }
+html[data-theme="dark"] .ps .nav-item.is-disabled:focus-visible { outline-color: var(--Focus); }
+
+/* ---------- Selos ---------- */
+html[data-theme="dark"] .ps-badge.evaluating { background: transparent; }
+html[data-theme="dark"] .ps-badge.closed, html[data-theme="dark"] .ps-badge.role-max { background: var(--Closed-bg); color: #e9eff9; }
+html[data-theme="dark"] .ps .ps-badge.closed, html[data-theme="dark"] .ps .ps-badge.role-max { box-shadow: inset 0 0 0 1px #3d5480, 0 2px 6px rgba(0, 0, 0, .25); }
+html[data-theme="dark"] .ps .ps-badge, html[data-theme="dark"] .ps .sede-tag { box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 30%, transparent), 0 2px 6px rgba(0, 0, 0, .22); }
+html[data-theme="dark"] .ps .ps-badge.evaluating { box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--Link) 60%, transparent); }
+
+/* ---------- Ações dos grids (ícones) ---------- */
+html[data-theme="dark"] .ps .act { background: var(--Softblue); color: var(--Link); box-shadow: 0 2px 6px rgba(0, 0, 0, .25), inset 0 0 0 1px color-mix(in srgb, var(--Link) 22%, transparent); }
+html[data-theme="dark"] .ps .act:hover, html[data-theme="dark"] .ps .act:focus-visible { background: color-mix(in srgb, var(--Link) 22%, var(--Surface)); box-shadow: 0 4px 10px rgba(0, 0, 0, .32), inset 0 0 0 1px color-mix(in srgb, var(--Link) 38%, transparent); }
+html[data-theme="dark"] .ps .act.danger { background: color-mix(in srgb, var(--Error) 13%, var(--Surface)); color: var(--Error); box-shadow: 0 2px 6px rgba(0, 0, 0, .25), inset 0 0 0 1px color-mix(in srgb, var(--Error) 26%, transparent); }
+html[data-theme="dark"] .ps .act.danger:hover, html[data-theme="dark"] .ps .act.danger:focus-visible { background: color-mix(in srgb, var(--Error) 22%, var(--Surface)); }
+html[data-theme="dark"] .ps .act.ok { background: color-mix(in srgb, var(--Success) 13%, var(--Surface)); color: var(--Success); box-shadow: 0 2px 6px rgba(0, 0, 0, .25), inset 0 0 0 1px color-mix(in srgb, var(--Success) 26%, transparent); }
+html[data-theme="dark"] .ps .act.ok:hover, html[data-theme="dark"] .ps .act.ok:focus-visible { background: color-mix(in srgb, var(--Success) 22%, var(--Surface)); }
+html[data-theme="dark"] .ps .act.primary { background: var(--Action); color: #fff; box-shadow: 0 3px 8px rgba(0, 0, 0, .35); }
+html[data-theme="dark"] .ps .act.muted, html[data-theme="dark"] .ps .act.muted:hover { background: var(--Disabled-bg); box-shadow: inset 0 0 0 1px var(--Border-card); }
+html[data-theme="dark"] .olho:hover, html[data-theme="dark"] .olho:focus-visible { background: var(--Softblue); }
+
+/* ---------- Tooltips (antes azul-marinho) ---------- */
+html[data-theme="dark"] .tt::after, html[data-theme="dark"] .back-btn::after, html[data-theme="dark"] .info-tip::after, html[data-theme="dark"] .btn-filtro::after { background: var(--Tip-bg); color: #fff; box-shadow: 0 6px 20px rgba(0, 0, 0, .4); }
+html[data-theme="dark"] .pasi-tt { background: var(--Tip-bg); color: #fff; box-shadow: 0 6px 20px rgba(0, 0, 0, .45); }
+html[data-theme="dark"] .ps .info-tip:hover, html[data-theme="dark"] .ps .info-tip:focus-visible { color: #b3d0ff; }
+
+/* ---------- Seletor segmentado ---------- */
+html[data-theme="dark"] .ps-seg { background: var(--Background); box-shadow: inset 0 0 0 1px var(--Border-card); }
+html[data-theme="dark"] .ps .filter-panel .ps-seg { background: var(--Background); box-shadow: inset 0 0 0 1px var(--Border-card); }
+html[data-theme="dark"] .ps-seg button.is-selected, html[data-theme="dark"] .seg-thumb { background: var(--Surface-3); box-shadow: 0 1px 4px rgba(0, 0, 0, .4), inset 0 0 0 1px #2f446a; }
+html[data-theme="dark"] .ps .ps-seg.seg-js button.is-selected { background: transparent; box-shadow: none; }
+
+/* ---------- Painel de filtros ---------- */
+html[data-theme="dark"] .filter-panel, html[data-theme="dark"] .ps .fp-wrap .filter-panel { background: #0e192b; }
+html[data-theme="dark"] .ps .fp-wrap .filter-panel { box-shadow: inset 0 5px 6px -5px rgba(0, 0, 0, .5), inset 0 -5px 6px -5px rgba(0, 0, 0, .4); }
+
+/* ---------- Pontos de ativo/inativo ---------- */
+html[data-theme="dark"] .dot.on { background: var(--Success); box-shadow: 0 0 0 3px color-mix(in srgb, var(--Success) 18%, transparent); }
+html[data-theme="dark"] .dot.off { background: var(--Error); box-shadow: 0 0 0 3px color-mix(in srgb, var(--Error) 18%, transparent); }
+
+/* ---------- Modais ---------- */
+html[data-theme="dark"] .ps .ps-scrim { background: rgba(2, 8, 18, .62); }
+
+/* ---------- Deslize para encerrar: trilho azul-marinho (variante escura já aprovada) ---------- */
+html[data-theme="dark"] .slide {
+  --sl-track: linear-gradient(180deg, #1d365d 0%, #102746 100%);
+  --sl-track-shadow: inset 0 2px 6px rgba(0, 0, 0, .35), 0 6px 16px rgba(0, 0, 0, .3);
+  --sl-fill: linear-gradient(90deg, rgba(47, 112, 223, 0) 0%, rgba(47, 112, 223, .5) 100%);
+  --sl-text-base: rgba(169, 200, 255, .45);
+  --sl-text-hi: #ffffff;
+  --sl-knob-bg: linear-gradient(180deg, #ffffff 0%, #e9f1ff 100%);
+  --sl-knob-fg: #2f70df;
+  --sl-knob-shadow: 0 2px 6px rgba(0, 0, 0, .3), inset 0 1px 0 #fff;
+  --sl-focus: 0 0 0 3px rgba(169, 200, 255, .9);
+}
+html[data-theme="dark"] .slide::before { box-shadow: inset 0 1px 3px rgba(0, 0, 0, .35), inset 0 0 0 1px var(--Border-card); }
+html[data-theme="dark"] .ps .slide-knob { background: #e3eaf6; }
+
+/* ---------- Telas de acesso ---------- */
+html[data-theme="dark"] .auth { background: radial-gradient(170% 160% at 0% 0%, #060d19 0%, rgba(13, 28, 52, .96) 35%, rgba(16, 36, 68, .62) 65%, rgba(16, 36, 68, 0) 95%), #1c4a9a; }
+html[data-theme="dark"] .auth .auth-hero { background: transparent; }
+html[data-theme="dark"] .auth .form-side { background: var(--Background); box-shadow: -6px 0 28px rgba(0, 0, 0, .45); }
+html[data-theme="dark"] .auth .auth-hero .tag { background: var(--Surface-3); box-shadow: 0 6px 18px rgba(0, 0, 0, .45), inset 0 0 0 1px #2f446a; }
+html[data-theme="dark"] .auth .auth-hero .tag .grad-txt { background: linear-gradient(90deg, #a9c8ff 0%, #84b3ff 50%, #5b95f2 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+html[data-theme="dark"] .auth .back-btn { background: var(--Surface-3); color: var(--Link); box-shadow: 0 2px 10px rgba(0, 0, 0, .4), inset 0 0 0 1px #2f446a; }
+html[data-theme="dark"] .auth .back-btn:hover, html[data-theme="dark"] .auth .back-btn:focus-visible { color: #b3d0ff; box-shadow: 0 4px 14px rgba(0, 0, 0, .5), inset 0 0 0 1px #3d5480; }
+html[data-theme="dark"] .grad-txt { background: linear-gradient(90deg, #a9c8ff 0%, #84b3ff 50%, #5b95f2 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+
+/* ---------- Diversos ---------- */
+html[data-theme="dark"] .ps-card .media { background: linear-gradient(180deg, rgba(3, 10, 22, .1) 20%, rgba(3, 10, 22, .6) 100%), #1d365d; }
+html[data-theme="dark"] .ps-sheet .handle { background: var(--Border-input); }
+html[data-theme="dark"] .ps .sede-tag { background: var(--Softblue); color: var(--Link); }
+html[data-theme="dark"] .ps-chip .x { background: rgba(132, 179, 255, .16); }
+html[data-theme="dark"] .qnum { background: var(--Action); color: #fff; }
+html[data-theme="dark"] .new-web { background: var(--Warning-bg); color: var(--Warning); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--Warning) 30%, transparent); }
+html[data-theme="dark"] .side .logout:hover { background: var(--Error-bg); color: var(--Error); }
+html[data-theme="dark"] .locked-state .ico { background: var(--Surface-2); }
+
+/* ---------- Seletor de tema ---------- */
+.side .tema { display: flex; flex-direction: column; gap: 6px; margin-top: auto; }
+.side .tema + .user { margin-top: 0; }
+.ps .tema-seg { display: flex; width: 100%; }
+.ps .tema-seg button { flex: 1 1 0; justify-content: center; min-height: 40px; cursor: pointer; }
+.ps .tema-seg svg.ic { width: 16px; height: 16px; }
+.tema-btn { position: absolute; top: 24px; right: 24px; z-index: 5; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border-radius: 50%; border: 1px solid var(--Border-card); background: var(--White); color: var(--Navy-600); cursor: pointer; box-shadow: 0 2px 8px rgba(23, 41, 68, .10); transition: background-color .2s, color .2s, transform .2s; }
+.tema-btn:hover, .tema-btn:focus-visible { color: var(--Link); background: var(--Softblue); transform: rotate(-12deg); }
+.ps .tema-btn svg.ic { width: 22px; height: 22px; }
+.tema-btn.tt::after { left: auto; right: 0; transform: none; bottom: auto; top: calc(100% + 8px); }
+html[data-theme="dark"] .tema-btn { background: var(--Surface-3); border-color: #2f446a; box-shadow: 0 2px 10px rgba(0, 0, 0, .4); }
+html[data-theme="dark"] .tema-btn:hover, html[data-theme="dark"] .tema-btn:focus-visible { background: var(--Softblue); }
+@media (prefers-reduced-motion: reduce) { .tema-btn, .tema-btn:hover { transition: none; transform: none; } }
+
+/* ---------- Escuro: nada claro além do texto ---------- */
+/* Linhas de unidade (5.3 Cadastrar profissional): o estilo da tela usava branco */
+html[data-theme="dark"] .un-row { background: var(--Surface-2); border-color: var(--Border-control); }
+html[data-theme="dark"] .un-row:not(.is-on) .nm { color: var(--Text-muted); }
+html[data-theme="dark"] .un-row.is-on { background: var(--Softblue); border-color: color-mix(in srgb, var(--Link) 55%, var(--Surface)); }
+html[data-theme="dark"] .un-row .nm { color: var(--Ink); }
+html[data-theme="dark"] .sede-pick[aria-disabled="true"] { opacity: .55; }
+html[data-theme="dark"] .sede-pick[aria-disabled="true"] .ps-box, html[data-theme="dark"] .is-disabled > .ps-box { background: var(--Disabled-bg); border-color: var(--Disabled-border); }
+
+/* Qualquer fundo branco escrito direto na tela vira superfície escura */
+html[data-theme="dark"] .ps [style*="background: var(--White)"], html[data-theme="dark"] .ps [style*="background:var(--White)"],
+html[data-theme="dark"] .ps [style*="background: #fff"], html[data-theme="dark"] .ps [style*="background:#fff"],
+html[data-theme="dark"] .ps [style*="background: #FFF"], html[data-theme="dark"] .ps [style*="background: white"],
+html[data-theme="dark"] .ps [style*="background-color: var(--White)"], html[data-theme="dark"] .ps [style*="background-color: #fff"] { background: var(--Surface-2) !important; }
+
+/* Deslize para encerrar: puxador escuro (azul quando liberado, cinza-azulado com cadeado quando bloqueado) */
+html[data-theme="dark"] .slide {
+  --sl-knob-bg: linear-gradient(180deg, #3a7be8 0%, #2f70df 100%);
+  --sl-knob-fg: #ffffff;
+  --sl-knob-shadow: 0 2px 6px rgba(0, 0, 0, .4), inset 0 1px 0 rgba(255, 255, 255, .18), inset 0 -2px 0 rgba(0, 0, 0, .2);
+}
+html[data-theme="dark"] .ps .slide-knob { background: var(--Surface-3); }
+html[data-theme="dark"] .ps .slide-knob .k-cadeado { color: var(--Text-muted); }
+html[data-theme="dark"] .slide.is-off .slide-knob { box-shadow: 0 1px 3px rgba(0, 0, 0, .4), inset 0 0 0 1px #2f446a; }
+
+/* Outros pontos que ficavam claros */
+html[data-theme="dark"] .ps-switch::after { background: #8fa0bd; }
+html[data-theme="dark"] .is-checked > .ps-switch::after { background: #dbe6fb; }
+html[data-theme="dark"] .ps-btn.on-dark { background: var(--Surface-3); color: var(--Link); }
+html[data-theme="dark"] .ps-file.is-error .fi, html[data-theme="dark"] .ps-drop.is-disabled { background: var(--Surface-2); }

@@ -231,3 +231,17 @@ html[data-theme="dark"] .ps-switch::after { background: #8fa0bd; }
 html[data-theme="dark"] .is-checked > .ps-switch::after { background: #dbe6fb; }
 html[data-theme="dark"] .ps-btn.on-dark { background: var(--Surface-3); color: var(--Link); }
 html[data-theme="dark"] .ps-file.is-error .fi, html[data-theme="dark"] .ps-drop.is-disabled { background: var(--Surface-2); }
+
+/* Preenchimento automático do navegador: sem a faixa azul-acinzentada, o campo mantém a cor do container */
+html[data-theme="dark"] .ps .ps-control input:-webkit-autofill,
+html[data-theme="dark"] .ps .ps-control input:-webkit-autofill:hover,
+html[data-theme="dark"] .ps .ps-control input:-webkit-autofill:focus,
+html[data-theme="dark"] .ps .ps-search input:-webkit-autofill,
+html[data-theme="dark"] .ps .ps-search input:-webkit-autofill:hover,
+html[data-theme="dark"] .ps .ps-search input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--Surface-2) inset;
+  box-shadow: 0 0 0 1000px var(--Surface-2) inset;
+  -webkit-text-fill-color: var(--Ink);
+  caret-color: var(--Ink);
+  transition: background-color 9999s ease-out 0s;
+}

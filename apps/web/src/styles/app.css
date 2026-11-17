@@ -152,3 +152,18 @@ a:hover { color: #174ea8; }
 @media (prefers-reduced-motion: reduce) {
   .avisos .aviso, .avisos .aviso.saindo { animation-duration: .01s; }
 }
+
+/* Preenchimento automático do navegador: sem a faixa azulada, o campo mantém a cor do container
+   (o tema escuro tem a sua versão em dark.css) */
+.ps .ps-control input:-webkit-autofill,
+.ps .ps-control input:-webkit-autofill:hover,
+.ps .ps-control input:-webkit-autofill:focus,
+.ps .ps-search input:-webkit-autofill,
+.ps .ps-search input:-webkit-autofill:hover,
+.ps .ps-search input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--White) inset;
+  box-shadow: 0 0 0 1000px var(--White) inset;
+  -webkit-text-fill-color: var(--Ink);
+  caret-color: var(--Ink);
+  transition: background-color 9999s ease-out 0s;
+}

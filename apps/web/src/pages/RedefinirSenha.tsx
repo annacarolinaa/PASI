@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import logo from '../assets/logo-pasi.png';
+import { BotaoTema } from '../components/Tema';
 import { useAuth } from '../auth/AuthContext';
 import { redefinirSenha } from '../api/auth';
 import { mensagemErro } from '../api/client';
@@ -67,6 +68,7 @@ export function RedefinirSenha() {
       </section>
 
       <main className="form-side">
+        <BotaoTema />
         <form
           className="box"
           onSubmit={(e) => {

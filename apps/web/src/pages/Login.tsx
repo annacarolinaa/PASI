@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import logo from '../assets/logo-pasi.png';
+import { BotaoTema } from '../components/Tema';
 import { rotaInicial, useAuth } from '../auth/AuthContext';
 import { mensagemErro, statusErro } from '../api/client';
 import { Alerta } from '../components/Form';
@@ -75,6 +76,7 @@ export function Login() {
       </section>
 
       <main className="form-side">
+        <BotaoTema />
         <form className="box" onSubmit={enviar} noValidate>
           <img className="logo" src={logo} alt="PASI" />
           <div>

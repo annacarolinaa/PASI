@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import logo from '../assets/logo-pasi.png';
+import { BotaoTema } from '../components/Tema';
 import { esqueceuSenha } from '../api/auth';
 import { mensagemErro } from '../api/client';
 import { AuthHeroTopo } from '../components/AuthHero';
@@ -50,6 +51,7 @@ export function EsqueciSenha() {
       </section>
 
       <main className="form-side">
+        <BotaoTema />
         <form className="box" onSubmit={enviar} noValidate>
           <img className="logo" src={logo} alt="PASI" />
           <div>

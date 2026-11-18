@@ -5,6 +5,7 @@ import { useAuth } from '../auth/AuthContext';
 import { SituacaoUsuario, TipoUsuario } from '../api/types';
 import { iniciais } from '../lib/format';
 import { contarPendentes } from '../api/gestao';
+import { SeletorTema } from './Tema';
 import { IcAtendimentos, IcCadeadoMenu, IcFormulario, IcPessoa, IcUsuarios, Ic, D } from './icons';
 
 const cls = ({ isActive }: { isActive: boolean }) => 'nav-item' + (isActive ? ' is-active' : '');
@@ -86,6 +87,7 @@ export function Sidebar() {
           </NavLink>
         </nav>
       )}
+      <SeletorTema />
       <div className="user">
         <span className="avatar" aria-hidden="true">
           {iniciais(usuario?.nome)}

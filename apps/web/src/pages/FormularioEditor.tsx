@@ -8,7 +8,7 @@ import * as apoio from '../api/apoio';
 import { mensagemErro } from '../api/client';
 import { useCarregar } from '../hooks';
 import { PageHead } from '../components/Layout';
-import { Alerta } from '../components/Form';
+import { Alerta, MensagemErro } from '../components/Form';
 import { Estado } from '../components/Estado';
 import { ModalCerteza } from '../components/Modal';
 import { useAvisos } from '../components/Avisos';
@@ -255,7 +255,7 @@ export function FormularioEditor() {
                       *
                     </span>
                   </legend>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }} role="radiogroup" aria-label="Tipo de formulário">
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }} role="radiogroup" aria-label="Tipo de formulário" aria-describedby={tentou && erros.tipo ? 'tipo-erro' : undefined}>
                     {(tipos ?? []).map((t) => (
                       <button
                         key={t.id_tipo_formulario}
@@ -270,7 +270,7 @@ export function FormularioEditor() {
                       </button>
                     ))}
                   </div>
-                  {tentou && erros.tipo && <div className="ps-helper error">{erros.tipo}</div>}
+                  {tentou && erros.tipo && <MensagemErro id="tipo-erro">{erros.tipo}</MensagemErro>}
                 </fieldset>
                 <div className="ps-field">
                   <label className="ps-label" htmlFor="tit">
@@ -280,9 +280,17 @@ export function FormularioEditor() {
                     </span>
                   </label>
                   <div className={'ps-control' + (tentou && erros.nome ? ' is-error' : '')}>
-                    <input id="tit" type="text" maxLength={50} value={nome} onChange={(e) => setNome(e.target.value)} />
+                    <input
+                      id="tit"
+                      type="text"
+                      maxLength={50}
+                      value={nome}
+                      onChange={(e) => setNome(e.target.value)}
+                      aria-invalid={(tentou && !!erros.nome) || undefined}
+                      aria-describedby={tentou && erros.nome ? 'tit-erro' : undefined}
+                    />
                   </div>
-                  {tentou && erros.nome && <div className="ps-helper error">{erros.nome}</div>}
+                  {tentou && erros.nome && <MensagemErro id="tit-erro">{erros.nome}</MensagemErro>}
                   <div className="ps-helper">
                     Obrigatório.<span className="ps-counter">{nome.length}/50</span>
                   </div>
@@ -374,7 +382,7 @@ export function FormularioEditor() {
                 </header>
                 <div className="pb">
                   <EditorPergunta p={rasc} aoMudar={setRasc} />
-                  {erroPergunta && <div className="ps-helper error">{erroPergunta}</div>}
+                  {erroPergunta && <MensagemErro>{erroPergunta}</MensagemErro>}
                   <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
                     <button
                       type="button"

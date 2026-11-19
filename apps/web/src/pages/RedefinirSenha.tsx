@@ -6,7 +6,7 @@ import { useAuth } from '../auth/AuthContext';
 import { redefinirSenha } from '../api/auth';
 import { mensagemErro } from '../api/client';
 import { AuthHeroTopo } from '../components/AuthHero';
-import { Alerta, ListaCriterios } from '../components/Form';
+import { Alerta, ListaCriterios, MensagemErro } from '../components/Form';
 import { IcCadeado } from '../components/icons';
 import { Modal } from '../components/Modal';
 import { criteriosSenha } from '../lib/senha';
@@ -121,7 +121,7 @@ export function RedefinirSenha() {
                     {confere ? 'As senhas conferem.' : 'As senhas não conferem.'}
                   </div>
                 ) : (
-                  tentou && <div className="ps-helper error">Repita a nova senha.</div>
+                  tentou && <MensagemErro>Repita a nova senha.</MensagemErro>
                 )}
               </div>
               <button type="submit" className="ps-btn primary lg block" aria-busy={enviando}>

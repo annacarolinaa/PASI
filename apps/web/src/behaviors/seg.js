@@ -7,7 +7,8 @@ export function installSeg() {
   if (window.__pasiSeg) return;
   window.__pasiSeg = true;
   var d = document, drag = null, suppress = false, raf = 0;
-  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // sem movimento: preferência do sistema ou opção "Reduzir movimento" do menu de acessibilidade
+  function reduce() { return document.documentElement.classList.contains('a11y-movimento') || !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
 
   function buttons(seg) { return Array.prototype.filter.call(seg.querySelectorAll('button'), function (b) { return b.closest('.ps-seg') === seg; }); }
   function selected(seg) { return buttons(seg).filter(function (b) { return b.classList.contains('is-selected'); })[0]; }
@@ -24,7 +25,7 @@ export function installSeg() {
     var t = thumbOf(seg);
     if (!b) { t.style.opacity = '0'; return; }
     t.style.opacity = '1';
-    t.classList.toggle('no-anim', !animate || reduce);
+    t.classList.toggle('no-anim', !animate || reduce());
     t.style.width = b.offsetWidth + 'px';
     t.style.height = b.offsetHeight + 'px';
     t.style.transform = 'translate(' + b.offsetLeft + 'px,' + b.offsetTop + 'px)';

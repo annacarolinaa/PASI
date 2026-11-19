@@ -156,7 +156,7 @@ table.tbl { width: 100%; border-collapse: collapse; font: 400 14px/1.4 var(--fon
 /* ---------- Telas de acesso ---------- */
 .auth { display: flex; flex-wrap: wrap; min-height: 900px; background: var(--Background); }
 .auth .auth-hero { flex: 1 1 480px; background: var(--Navy-700); color: var(--White); padding: 64px; display: flex; flex-direction: column; align-items: stretch; justify-content: space-between; gap: 24px; box-sizing: border-box; }
-.auth .auth-hero .tag { display: inline-flex; align-self: flex-start; align-items: center; padding: 18px; line-height: 1; border-radius: var(--radius-label); background: #F8FAFF; font: 400 14px/1 var(--font-display); color: #2F70DF; box-shadow: 0 6px 18px rgba(8, 18, 40, .35); }
+.auth .auth-hero .tag { display: inline-flex; align-self: flex-start; align-items: center; padding: 18px; line-height: 1; border-radius: var(--radius-label); background: #F8FAFF; font: 400 14px/1 var(--font-display); color: #1D5FCF; box-shadow: 0 6px 18px rgba(8, 18, 40, .35); } /* #1D5FCF: texto ≥ 4.5:1 sobre o fundo claro */
 .auth .auth-hero h2 { margin: 20px 0 16px; font: 400 46px/1.4 var(--font-display); letter-spacing: -0.7px; color: var(--White); }
 .auth .auth-hero h2 em { font-style: normal; color: var(--Action); background: linear-gradient(90deg, var(--Info-on-dark) 0%, var(--Blue) 50%, var(--Action) 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 .auth .auth-hero p { margin: 0; font: 400 16px/1.6 var(--font-sans); color: var(--On-dark-86); max-width: 440px; }
@@ -534,7 +534,7 @@ table.tbl { width: 100%; border-collapse: collapse; font: 400 14px/1.4 var(--fon
 .side-actions > .ps-btn { width: 100%; justify-content: center; box-sizing: border-box; }
 
 /* Botão Cancelar (padrão em todas as telas): contorno e texto vermelho pastel; ao passar o mouse, fundo vermelho e texto branco */
-.ps .ps-btn.cancelar { background: var(--White, #fff); color: color-mix(in srgb, var(--Error) 72%, white); border: 1px solid color-mix(in srgb, var(--Error) 38%, white); box-shadow: none; transition: background-color .2s ease, color .2s ease, border-color .2s ease; }
+.ps .ps-btn.cancelar { background: var(--White, #fff); color: var(--Error); /* texto ≥ 4.5:1 sobre branco (WCAG AA) */ border: 1px solid color-mix(in srgb, var(--Error) 38%, white); box-shadow: none; transition: background-color .2s ease, color .2s ease, border-color .2s ease; }
 .ps .ps-btn.cancelar:hover, .ps .ps-btn.cancelar:focus-visible { background: var(--Error); border-color: var(--Error); color: var(--White, #fff); }
 
 /* Cadastrar profissional: caixa, nome e "Sede" alinhados ao centro em cada linha de unidade */

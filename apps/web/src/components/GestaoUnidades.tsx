@@ -2,7 +2,7 @@ import { useState } from 'react';
 import * as apoio from '../api/apoio';
 import type { VinculoUnidade } from '../api/types';
 import { useCarregar } from '../hooks';
-import { Select } from './Form';
+import { Select, MensagemErro } from './Form';
 import { Modal } from './Modal';
 import { Ic } from './icons';
 import { data } from '../lib/format';
@@ -172,7 +172,7 @@ export function ModalVincular({
             </option>
           ))}
         </Select>
-        {erro && idUn === '' && <div className="ps-helper error">Escolha a unidade.</div>}
+        {erro && idUn === '' && <MensagemErro>Escolha a unidade.</MensagemErro>}
         <div className="ps-helper">Só aparecem unidades ainda não vinculadas.</div>
       </div>
       <button

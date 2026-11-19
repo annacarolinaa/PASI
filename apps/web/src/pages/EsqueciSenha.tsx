@@ -4,7 +4,7 @@ import { BotaoTema } from '../components/Tema';
 import { esqueceuSenha } from '../api/auth';
 import { mensagemErro } from '../api/client';
 import { AuthHeroTopo } from '../components/AuthHero';
-import { Alerta } from '../components/Form';
+import { Alerta, MensagemErro } from '../components/Form';
 import { IcEmail } from '../components/icons';
 
 /** 1.2 Esqueci a senha (EsqueciSenha.dc.html). A API manda um link válido por 1 hora. */
@@ -77,9 +77,10 @@ export function EsqueciSenha() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     aria-invalid={!!erro || undefined}
+                    aria-describedby={erro ? 'email-erro' : undefined}
                   />
                 </div>
-                {erro && <div className="ps-helper error">{erro}</div>}
+                {erro && <MensagemErro id="email-erro">{erro}</MensagemErro>}
               </div>
               <button type="submit" className="ps-btn primary lg block" aria-busy={enviando}>
                 {enviando ? 'Enviando…' : 'Enviar link de recuperação'}

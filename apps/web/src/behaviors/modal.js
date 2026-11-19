@@ -6,14 +6,15 @@
 export function installModal() {
   if (window.__pasiModal) return;
   window.__pasiModal = true;
-  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // sem movimento: preferência do sistema ou opção "Reduzir movimento" do menu de acessibilidade
+  function reduce() { return document.documentElement.classList.contains('a11y-movimento') || !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
   function scrimOf(n) {
     if (n.nodeType !== 1) return null;
     if (n.classList.contains('ps-scrim')) return n;
     return n.querySelector ? n.querySelector('.ps-scrim') : null;
   }
   new MutationObserver(function (muts) {
-    if (reduce) return;
+    if (reduce()) return;
     var entrou = muts.some(function (m) { return Array.prototype.some.call(m.addedNodes, function (n) { return !!scrimOf(n) && !(n.classList && n.classList.contains('is-saindo')); }); });
     muts.forEach(function (m) {
       Array.prototype.forEach.call(m.removedNodes, function (n) {

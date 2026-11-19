@@ -171,7 +171,7 @@ html[data-theme="dark"] .ps .slide-knob { background: #e3eaf6; }
 html[data-theme="dark"] .auth { background: radial-gradient(170% 160% at 0% 0%, #060d19 0%, rgba(13, 28, 52, .96) 35%, rgba(16, 36, 68, .62) 65%, rgba(16, 36, 68, 0) 95%), #1c4a9a; }
 html[data-theme="dark"] .auth .auth-hero { background: transparent; }
 html[data-theme="dark"] .auth .form-side { background: var(--Background); box-shadow: -6px 0 28px rgba(0, 0, 0, .45); }
-html[data-theme="dark"] .auth .auth-hero .tag { background: var(--Surface-3); box-shadow: 0 6px 18px rgba(0, 0, 0, .45), inset 0 0 0 1px #2f446a; }
+html[data-theme="dark"] .auth .auth-hero .tag { background: var(--Surface-3); color: var(--Link); box-shadow: 0 6px 18px rgba(0, 0, 0, .45), inset 0 0 0 1px #2f446a; }
 html[data-theme="dark"] .auth .auth-hero .tag .grad-txt { background: linear-gradient(90deg, #a9c8ff 0%, #84b3ff 50%, #5b95f2 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 html[data-theme="dark"] .auth .back-btn { background: var(--Surface-3); color: var(--Link); box-shadow: 0 2px 10px rgba(0, 0, 0, .4), inset 0 0 0 1px #2f446a; }
 html[data-theme="dark"] .auth .back-btn:hover, html[data-theme="dark"] .auth .back-btn:focus-visible { color: #b3d0ff; box-shadow: 0 4px 14px rgba(0, 0, 0, .5), inset 0 0 0 1px #3d5480; }

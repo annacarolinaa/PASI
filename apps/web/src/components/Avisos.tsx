@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { D, Ic, IcErro, IcFechar, IcSucesso } from './icons';
+import { lerAviso } from '../lib/acessibilidade';
 
 type Tipo = 'success' | 'error' | 'info';
 
@@ -36,6 +37,8 @@ export function AvisosProvider({ children }: { children: ReactNode }) {
 
   const avisar = useCallback<AvisosValor['avisar']>(({ tipo = 'success', titulo, texto }) => {
     const id = proximo.current++;
+    // com a leitura em voz alta ligada, o aviso também é lido (RF05)
+    lerAviso([tipo === 'error' ? 'Erro' : '', titulo, texto].filter(Boolean).join('. '));
     // no máximo 3 na tela: o mais antigo sai
     setAvisos((l) => [...l.filter((a) => !a.saindo).slice(-2), { id, tipo, titulo, texto, saindo: false }]);
   }, []);

@@ -12,6 +12,15 @@
         try { t = localStorage.getItem('pasi-tema'); } catch (e) {}
         var escuro = t === 'escuro' || (t !== 'claro' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
         document.documentElement.setAttribute('data-theme', escuro ? 'dark' : 'light');
+        // Preferências de acessibilidade (lib/acessibilidade.ts), também antes da primeira pintura.
+        try {
+          var a = JSON.parse(localStorage.getItem('pasi-a11y') || 'null');
+          var c = document.documentElement.classList;
+          if (a && (a.fonte === 1 || a.fonte === 2)) c.add('a11y-font-' + a.fonte);
+          if (a && a.contraste) c.add('a11y-contraste');
+          if (a && a.pretoBranco) c.add('a11y-pb');
+          if (a && a.movimento) c.add('a11y-movimento');
+        } catch (e) {}
       })();
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />

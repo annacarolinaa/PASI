@@ -6,7 +6,7 @@ import { useAuth } from '../auth/AuthContext';
 import { primeiroAcesso } from '../api/auth';
 import { mensagemErro } from '../api/client';
 import { AuthHeroTopo } from '../components/AuthHero';
-import { Alerta, ListaCriterios } from '../components/Form';
+import { Alerta, ListaCriterios, MensagemErro } from '../components/Form';
 import { IcCadeado } from '../components/icons';
 import { Modal } from '../components/Modal';
 import { cpfMascarado, dataHora } from '../lib/format';
@@ -147,7 +147,7 @@ export function PrimeiroAcesso() {
                 {confere ? 'As senhas conferem.' : 'As senhas não conferem.'}
               </div>
             ) : (
-              tentou && <div className="ps-helper error">Repita a nova senha.</div>
+              tentou && <MensagemErro>Repita a nova senha.</MensagemErro>
             )}
           </div>
 

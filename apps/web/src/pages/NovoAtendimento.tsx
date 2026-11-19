@@ -9,7 +9,7 @@ import type { PacienteResumo } from '../api/types';
 import { useAtrasado, useCarregar, useUnidadesPermitidas } from '../hooks';
 import { PageHead, PanelTitle } from '../components/Layout';
 import { BarraBusca, PainelFiltros } from '../components/Lista';
-import { Alerta, Select } from '../components/Form';
+import { Alerta, Select, MensagemErro } from '../components/Form';
 import { useAvisos } from '../components/Avisos';
 import { Seg } from '../components/Seg';
 import { IcBusca, IcFormulario } from '../components/icons';
@@ -146,7 +146,7 @@ export function NovoAtendimento() {
                       aria-autocomplete="list"
                     />
                   </label>
-                  {tentou && !paciente && <div className="ps-helper error">Escolha o paciente.</div>}
+                  {tentou && !paciente && <MensagemErro>Escolha o paciente.</MensagemErro>}
                 </div>
                 {(pacientes.length > 0 || paciente) && (
                   <div className="ps-menu" role="listbox" aria-label="Pacientes encontrados" style={{ maxWidth: 'none' }}>
@@ -186,7 +186,7 @@ export function NovoAtendimento() {
 
             <section className="panel">
               <header>
-                <PanelTitle dica="O intermediário escolhe entre as unidades dele; o máximo, qualquer unidade.">
+                <PanelTitle id="unidade-titulo" dica="O intermediário escolhe entre as unidades dele; o máximo, qualquer unidade.">
                   Unidade de atendimento{' '}
                   <span className="req" aria-hidden="true">
                     *
@@ -201,6 +201,8 @@ export function NovoAtendimento() {
                     aoMudar={(v) => setIdUnidade(v ? Number(v) : '')}
                     invalido={tentou && idUnidade === ''}
                     desabilitado={unidades.carregando}
+                    rotuladoPor="unidade-titulo"
+                    descritoPor={tentou && idUnidade === '' ? 'unidade-erro' : undefined}
                   >
                     {idUnidade === '' && <option value="">{unidades.carregando ? 'Carregando…' : 'Selecione'}</option>}
                     {unidades.lista.map((u) => (
@@ -210,7 +212,9 @@ export function NovoAtendimento() {
                       </option>
                     ))}
                   </Select>
-                  {tentou && idUnidade === '' && <div className="ps-helper error">Escolha a unidade do atendimento.</div>}
+                  {tentou && idUnidade === '' && (
+                    <MensagemErro id="unidade-erro">Escolha a unidade do atendimento.</MensagemErro>
+                  )}
                 </div>
               </div>
             </section>
@@ -347,7 +351,7 @@ export function NovoAtendimento() {
                   </strong>
                 </div>
               </div>
-              {tentou && n === 0 && <div className="ps-helper error">Escolha pelo menos 1 formulário.</div>}
+              {tentou && n === 0 && <MensagemErro>Escolha pelo menos 1 formulário.</MensagemErro>}
             </div>
             <footer>
               <Link className="ps-btn secondary lg cancelar" to="/atendimentos">

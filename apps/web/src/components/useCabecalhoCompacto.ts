@@ -21,7 +21,8 @@ export function useCabecalhoCompacto(ref: RefObject<HTMLElement | null>) {
   useLayoutEffect(() => {
     const head = ref.current;
     if (!head) return;
-    const semMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const semMovimento =
+      document.documentElement.classList.contains('a11y-movimento') || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let compacto = false;
     let alturaCheia = 0;
     let limiar = Infinity;

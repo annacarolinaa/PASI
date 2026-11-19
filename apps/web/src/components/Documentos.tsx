@@ -4,6 +4,7 @@ import type { Documento } from '../api/documentos';
 import { mensagemErro } from '../api/client';
 import { data } from '../lib/format';
 import { IcFormulario, Ic } from './icons';
+import { MensagemErro } from './Form';
 
 const BAIXAR = 'M12 4v12M7 11l5 5 5-5M4 20h16';
 const LIXEIRA = 'M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3';
@@ -37,7 +38,7 @@ export function ArquivoDoc({ doc, aoExcluir }: { doc: Documento; aoExcluir?: () 
           </button>
         )}
       </div>
-      {erro && <div className="ps-helper error">{erro}</div>}
+      {erro && <MensagemErro>{erro}</MensagemErro>}
     </>
   );
 }

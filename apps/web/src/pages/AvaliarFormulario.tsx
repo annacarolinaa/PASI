@@ -8,7 +8,7 @@ import { mensagemErro } from '../api/client';
 import { SituacaoFormulario as SF } from '../api/types';
 import { useCarregar } from '../hooks';
 import { PageHead, PanelTitle } from '../components/Layout';
-import { Alerta } from '../components/Form';
+import { Alerta, MensagemErro } from '../components/Form';
 import { Modal } from '../components/Modal';
 import { useAvisos } from '../components/Avisos';
 import { Estado } from '../components/Estado';
@@ -152,6 +152,7 @@ export function AvaliarFormulario() {
                         maxLength={500}
                         placeholder="Registre sua observação final sobre as respostas..."
                         aria-invalid={erroObs || undefined}
+                        aria-describedby={erroObs ? 'obs-erro' : undefined}
                         style={{ minHeight: 180 }}
                         value={obs}
                         onChange={(e) => {
@@ -160,7 +161,7 @@ export function AvaliarFormulario() {
                         }}
                       />
                     </div>
-                    {erroObs && <div className="ps-helper error">A observação da avaliação é obrigatória.</div>}
+                    {erroObs && <MensagemErro id="obs-erro">A observação da avaliação é obrigatória.</MensagemErro>}
                     <div className="ps-helper">
                       Até 500 caracteres.<span className="ps-counter">{obs.length}/500</span>
                     </div>

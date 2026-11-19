@@ -122,7 +122,7 @@ export function Paginacao({
       </span>
       <nav className="ps-pagination" aria-label="Paginação">
         {pagina <= 1 ? (
-          <span className="ps-page nav is-disabled">
+          <span className="ps-page nav is-disabled" aria-disabled="true">
             <Ic d={D.chevronEsq} />
             Anterior
           </span>
@@ -148,7 +148,7 @@ export function Paginacao({
           ),
         )}
         {pagina >= ultima ? (
-          <span className="ps-page nav is-disabled">
+          <span className="ps-page nav is-disabled" aria-disabled="true">
             Próxima
             <Ic d={D.chevronDir} />
           </span>

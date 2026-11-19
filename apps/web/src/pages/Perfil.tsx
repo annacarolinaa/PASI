@@ -5,7 +5,7 @@ import * as usuariosApi from '../api/usuarios';
 import { mensagemErro } from '../api/client';
 import type { Genero, VinculoUnidade } from '../api/types';
 import { PageHead, PanelTitle } from '../components/Layout';
-import { Campo, Entrada, EntradaSenha, ListaCriterios, Select, SoLeitura } from '../components/Form';
+import { Campo, Entrada, EntradaSenha, ListaCriterios, Select, SoLeitura, MensagemErro } from '../components/Form';
 import { Seg } from '../components/Seg';
 import { Modal } from '../components/Modal';
 import { useAvisos } from '../components/Avisos';
@@ -299,7 +299,7 @@ export function Perfil() {
               </div>
             </div>
             <ListaCriterios criterios={criterios} rotulo="Critérios da nova senha" />
-            {erroSenha && <div className="ps-helper error">{erroSenha}</div>}
+            {erroSenha && <MensagemErro>{erroSenha}</MensagemErro>}
           </div>
           <footer style={{ justifyContent: 'space-between', alignItems: 'center' }}>
             <span className="ps-results-meta" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 17 }}>

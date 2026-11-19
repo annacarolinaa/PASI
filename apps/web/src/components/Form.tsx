@@ -1,4 +1,5 @@
-import { useState, type CSSProperties, type InputHTMLAttributes, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type InputHTMLAttributes, type ReactNode } from 'react';
+import { lerAviso } from '../lib/acessibilidade';
 import { D, Ic, IcAlerta, IcCadeado, IcChevron, IcErro, IcInfo, IcSucesso } from './icons';
 
 /** Campo: rótulo + controle + ajuda (.ps-field). */
@@ -43,6 +44,31 @@ export function Campo({
       )}
     </>
   );
+  const idErro = id ? `${id}-erro` : undefined;
+  const idAjuda = id ? `${id}-ajuda` : undefined;
+  const temErro = !!erro;
+  const temSucesso = !erro && !!sucesso;
+  const temAjuda = !!ajuda;
+  // RF06: liga o controle (id) às mensagens de erro/ajuda, para o leitor de tela
+  // anunciá-las junto com o campo. Feito no DOM para valer para qualquer controle
+  // (Entrada, Select, textarea, input solto) sem mudar cada tela.
+  useEffect(() => {
+    if (!id) return;
+    const el = document.getElementById(id);
+    if (!el) return;
+    const ids = [temErro || temSucesso ? idErro : null, temAjuda ? idAjuda : null].filter(Boolean).join(' ');
+    if (ids) el.setAttribute('aria-describedby', ids);
+    else el.removeAttribute('aria-describedby');
+    // marca o aria-invalid que foi posto aqui, para tirar só esse quando o erro sumir
+    // (o das Entradas com "invalido" continua sendo controlado pelo React)
+    if (temErro) {
+      el.setAttribute('aria-invalid', 'true');
+      el.dataset.erroCampo = '1';
+    } else if (el.dataset.erroCampo) {
+      el.removeAttribute('aria-invalid');
+      delete el.dataset.erroCampo;
+    }
+  }, [id, idErro, idAjuda, temErro, temSucesso, temAjuda]);
   return (
     <div className="ps-field">
       {estatico || !id ? (
@@ -53,9 +79,33 @@ export function Campo({
         </label>
       )}
       {children}
-      {erro && <div className="ps-helper error">{erro}</div>}
-      {!erro && sucesso && <div className="ps-helper success">{sucesso}</div>}
-      {ajuda && <div className="ps-helper">{ajuda}</div>}
+      {erro && (
+        <div className="ps-helper error" id={idErro} role="alert">
+          {erro}
+        </div>
+      )}
+      {!erro && sucesso && (
+        <div className="ps-helper success" id={idErro}>
+          {sucesso}
+        </div>
+      )}
+      {ajuda && (
+        <div className="ps-helper" id={idAjuda}>
+          {ajuda}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Mensagem de erro solta (fora do <Campo>), RF06: anunciada pelo leitor de tela ao
+ * aparecer (role="alert") e com id para o campo apontar a ela via aria-describedby.
+ */
+export function MensagemErro({ id, children }: { id?: string; children: ReactNode }) {
+  return (
+    <div className="ps-helper error" id={id} role="alert">
+      {children}
     </div>
   );
 }
@@ -77,6 +127,8 @@ export function Select({
   children,
   invalido,
   desabilitado,
+  rotuladoPor,
+  descritoPor,
 }: {
   id?: string;
   valor: string | number;
@@ -84,10 +136,22 @@ export function Select({
   children: ReactNode;
   invalido?: boolean;
   desabilitado?: boolean;
+  /** id do elemento que serve de rótulo, quando não há <label> (ex.: título do painel) */
+  rotuladoPor?: string;
+  /** id da mensagem de erro/ajuda ligada ao campo */
+  descritoPor?: string;
 }) {
   return (
     <div className={'ps-control' + (invalido ? ' is-error' : '')}>
-      <select id={id} value={valor} onChange={(e) => aoMudar(e.target.value)} aria-invalid={invalido || undefined} disabled={desabilitado}>
+      <select
+        id={id}
+        value={valor}
+        onChange={(e) => aoMudar(e.target.value)}
+        aria-invalid={invalido || undefined}
+        aria-labelledby={rotuladoPor}
+        aria-describedby={descritoPor}
+        disabled={desabilitado}
+      >
         {children}
       </select>
       <IcChevron style={{ color: 'var(--Link)' }} />
@@ -127,7 +191,13 @@ export function EntradaSenha({
   return (
     <div className={cls}>
       <IcCadeado style={{ color: 'var(--Text-muted)' }} />
-      <input type={ver ? 'text' : 'password'} value={valor} onChange={(e) => aoMudar(e.target.value)} {...resto} />
+      <input
+        type={ver ? 'text' : 'password'}
+        value={valor}
+        onChange={(e) => aoMudar(e.target.value)}
+        aria-invalid={invalido || estado === 'erro' || undefined}
+        {...resto}
+      />
       <button type="button" className="olho" onClick={() => setVer(!ver)} aria-label={rot} aria-pressed={ver} data-tip={rot}>
         <Ic d={ver ? D.olhoFechado : D.olho} />
       </button>
@@ -168,6 +238,14 @@ export function Alerta({
   estilo?: CSSProperties;
   id?: string;
 }) {
+  const caixa = useRef<HTMLDivElement>(null);
+  // RF05/RF06: com a leitura em voz alta ligada, alertas de erro são lidos ao aparecer
+  const textoErro = tipo === 'error' ? `${typeof titulo === 'string' ? titulo : ''}|${typeof children === 'string' ? children : ''}` : '';
+  useEffect(() => {
+    if (tipo !== 'error' || !caixa.current) return;
+    // título e texto em linhas separadas viram frases separadas na leitura
+    lerAviso('Erro. ' + caixa.current.innerText.split(/\n+/).map((t) => t.trim()).filter(Boolean).join('. '));
+  }, [tipo, textoErro]);
   const icone =
     tipo === 'success' ? (
       <IcSucesso lg style={{ color: 'var(--Success)' }} />
@@ -179,7 +257,7 @@ export function Alerta({
       <IcInfo lg style={{ color: 'var(--Link)' }} />
     );
   return (
-    <div className={`ps-alert ${tipo}`} role={tipo === 'error' || tipo === 'warning' ? 'alert' : 'status'} style={estilo} id={id}>
+    <div ref={caixa} className={`ps-alert ${tipo}`} role={tipo === 'error' || tipo === 'warning' ? 'alert' : 'status'} style={estilo} id={id}>
       {icone}
       <div className="body" style={acao ? { flex: 1 } : undefined}>
         {titulo && <strong>{titulo}</strong>}

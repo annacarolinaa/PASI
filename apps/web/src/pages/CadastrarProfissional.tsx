@@ -5,7 +5,7 @@ import * as apoio from '../api/apoio';
 import { mensagemErro } from '../api/client';
 import type { Profissao, Unidade } from '../api/types';
 import { PageHead } from '../components/Layout';
-import { Alerta, Campo, Entrada, Select } from '../components/Form';
+import { Alerta, Campo, Entrada, Select, MensagemErro } from '../components/Form';
 import { Seg } from '../components/Seg';
 import { Modal } from '../components/Modal';
 import { Ic } from '../components/icons';
@@ -277,7 +277,7 @@ export function CadastrarProfissional() {
                     </div>
                   );
                 })}
-                {err('un') && <div className="ps-helper error">{erros.un}</div>}
+                {err('un') && <MensagemErro id="un-erro">{erros.un}</MensagemErro>}
               </div>
             </section>
           </form>

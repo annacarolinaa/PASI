@@ -7,7 +7,7 @@ import { mensagemErro } from '../api/client';
 import { SituacaoAtendimento as SA, SituacaoFormulario as SF } from '../api/types';
 import { useCarregar, useUnidadesPermitidas } from '../hooks';
 import { PageHead, PanelTitle } from '../components/Layout';
-import { Campo, Select, SoLeitura } from '../components/Form';
+import { Campo, Select, SoLeitura, MensagemErro } from '../components/Form';
 import { useAvisos } from '../components/Avisos';
 import { BarraBusca, PainelFiltros } from '../components/Lista';
 import { Modal } from '../components/Modal';
@@ -302,7 +302,7 @@ function ModalAdicionar({
             />
           </div>
         </PainelFiltros>
-        {erro && <div className="ps-helper error">{erro}</div>}
+        {erro && <MensagemErro>{erro}</MensagemErro>}
         {!forms ? (
           <div className="ps-helper">Carregando formulários…</div>
         ) : disponiveis.length === 0 ? (

@@ -5,6 +5,7 @@ import { TipoUsuario } from '../api/types';
 import { Modal } from './Modal';
 import { D, Ic } from './icons';
 import { dataHora } from '../lib/format';
+import { MensagemErro } from './Form';
 
 export type AcaoUsuario = 'reenviar' | 'promover' | 'inativar' | 'reativar' | 'email';
 
@@ -155,7 +156,7 @@ export function ModalAcaoUsuario({
           </div>
         </div>
       )}
-      {erro && <div className="ps-helper error">{erro}</div>}
+      {erro && <MensagemErro>{erro}</MensagemErro>}
     </Modal>
   );
 }

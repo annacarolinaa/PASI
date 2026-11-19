@@ -6,7 +6,8 @@
 export function installMorph() {
   if (window.__pasiMorph) return;
   window.__pasiMorph = true;
-  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // sem movimento: preferência do sistema ou opção "Reduzir movimento" do menu de acessibilidade
+  function reduce() { return document.documentElement.classList.contains('a11y-movimento') || !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
   function sig(el) { return el.className.replace(/\s*morph-pulo/g, '') + '|' + el.textContent; }
   function natural(el) { var w = el.style.width; el.style.width = ''; var n = el.getBoundingClientRect().width; el.style.width = w; return n; }
   function scan() {
@@ -17,7 +18,7 @@ export function installMorph() {
       el.__sig = s;
       var from = el.__w || natural(el), to = natural(el);
       el.__w = to;
-      if (reduce) return;
+      if (reduce()) return;
       var c = el.querySelector('.morph-c');
       if (c) { c.classList.remove('morph-in'); void c.offsetWidth; c.classList.add('morph-in'); }
       el.classList.remove('morph-pulo'); void el.offsetWidth; el.classList.add('morph-pulo');

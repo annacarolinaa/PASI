@@ -1,0 +1,54 @@
+# Publica uma atualização OTA (EAS Update) do app mobile sempre que algo em
+# apps/mobile chega na branch dev. Os APKs gerados com o perfil "preview"
+# (canal "preview") baixam a atualização ao abrir e a aplicam na próxima vez
+# que o app é aberto.
+#
+# runtimeVersion segue o "version" do apps/mobile/app.json (política
+# appVersion). Ao fazer uma mudança NATIVA (biblioteca com código nativo,
+# permissões, ícone, versão do Expo SDK), aumente o "version" (ex.: 1.0.0 ->
+# 1.1.0) e gere um APK novo com
+#   eas build -p android --profile preview
+# Assim os APKs antigos ignoram updates que exigem código nativo que eles não
+# têm, em vez de travarem.
+#
+# Requer o secret EXPO_TOKEN (token de acesso da conta Expo do TCC).
+name: mobile-update
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - apps/mobile/**
+      - package-lock.json
+  workflow_dispatch:
+
+# Se dois merges chegarem em sequência, só o mais recente é publicado
+concurrency:
+  group: mobile-update
+  cancel-in-progress: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - run: npm ci
+
+      - name: Publicar update no canal preview
+        working-directory: apps/mobile
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message || 'Publicação manual' }}
+        run: eas update --channel preview --environment preview --message "$COMMIT_MESSAGE" --non-interactive

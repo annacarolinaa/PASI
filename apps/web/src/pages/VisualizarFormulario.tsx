@@ -9,9 +9,10 @@ import { PageHead } from '../components/Layout';
 import { useAvisos } from '../components/Avisos';
 import { Modal } from '../components/Modal';
 import { Estado } from '../components/Estado';
+import { EsqArquivos, EsqCabecalho, EsqItens, EsqKv, EsqPainel, TelaCarregando } from '../components/Esqueleto';
 import { SeloTipo } from '../components/Situacao';
 import { ArquivoDoc } from '../components/Documentos';
-import { D, Ic, IcLapis } from '../components/icons';
+import { IcLapis } from '../components/icons';
 import { data } from '../lib/format';
 import { nomeTipoPergunta, TipoPergunta } from '../lib/perguntas';
 
@@ -25,7 +26,27 @@ export function VisualizarFormulario() {
   const [ocupado, setOcupado] = useState(false);
   const avisar = useAvisos();
 
-  if (carregando && !f) return <Estado texto="Carregando formulário…" />;
+  if (carregando && !f)
+    return (
+      <TelaCarregando rotulo="Carregando formulário…">
+        <EsqCabecalho migalhas={3} acoes={2} titulo={320} />
+        <div className="page-body">
+          <div className="split">
+            <EsqPainel titulo={110}>
+              <EsqItens n={3} numero campo />
+            </EsqPainel>
+            <div className="resumo-fixo" style={{ display: 'flex', flexDirection: 'column', gap: 24, minWidth: 0 }}>
+              <EsqPainel titulo={100}>
+                <EsqKv n={5} colunas={1} />
+              </EsqPainel>
+              <EsqPainel titulo={190}>
+                <EsqArquivos n={2} />
+              </EsqPainel>
+            </div>
+          </div>
+        </div>
+      </TelaCarregando>
+    );
   if (erro || !f) return <Estado texto={erro ?? 'Formulário não encontrado.'} erro />;
 
   const inativo = f.ativo === false;
@@ -57,12 +78,6 @@ export function VisualizarFormulario() {
         voltar="/formularios"
         linhaTitulo="flex"
         titulo={<h1>{f.nome}</h1>}
-        extra={
-          <>
-            <SeloTipo nome={f.tipo_formulario?.nome} />
-            <span className={'ps-badge ' + (inativo ? 'neutral' : 'success')}>{inativo ? 'Inativo' : 'Ativo'}</span>
-          </>
-        }
         acoes={
           <>
             <Link className="ps-btn secondary" to={`/formularios/${f.id_formulario}/editar`}>
@@ -91,25 +106,38 @@ export function VisualizarFormulario() {
                 <div className="item" style={{ alignItems: 'flex-start' }} key={p.id_pergunta}>
                   <span className="qnum">{i + 1}</span>
                   <div className="meta" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    <span style={{ display: 'flex', gap: 8 }}>
+                    {/* primeiro a pergunta; tipo e obrigatoriedade vêm depois do campo */}
+                    <strong style={{ fontWeight: 600 }}>{p.pergunta}</strong>
+                    <Previa p={p} />
+                    <span className="selos-linha">
                       <span className="ps-badge info">{nomeTipoPergunta(p.id_tipo_pergunta, p.valor_minimo, p.valor_maximo)}</span>
                       {p.obrigatoria !== false && <span className="ps-badge error">Obrigatória</span>}
                     </span>
-                    <strong style={{ fontWeight: 600 }}>{p.pergunta}</strong>
-                    <Previa p={p} />
                   </div>
                 </div>
               ))}
             </div>
           </section>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 24, minWidth: 0 }}>
+          <div className="resumo-fixo" style={{ display: 'flex', flexDirection: 'column', gap: 24, minWidth: 0 }}>
             <section className="panel">
               <header>
                 <h2>Resumo</h2>
               </header>
               <div className="pb">
                 <div className="kv" style={{ gridTemplateColumns: 'minmax(0, 1fr)' }}>
+                  <div>
+                    <span>Tipo</span>
+                    <strong>
+                      <SeloTipo nome={f.tipo_formulario?.nome} />
+                    </strong>
+                  </div>
+                  <div>
+                    <span>Situação</span>
+                    <strong>
+                      <span className={'ps-badge ' + (inativo ? 'neutral' : 'success')}>{inativo ? 'Inativo' : 'Ativo'}</span>
+                    </strong>
+                  </div>
                   <div>
                     <span>Criado em</span>
                     <strong>{data(f.dt_cadastro)}</strong>
@@ -137,9 +165,6 @@ export function VisualizarFormulario() {
                     Nenhum documento enviado.
                   </p>
                 )}
-                <Link className="ps-text-action" to={`/formularios/${f.id_formulario}/editar`}>
-                  Gerenciar documentos <Ic d={D.seta} />
-                </Link>
               </div>
             </aside>
           </div>
@@ -157,7 +182,7 @@ export function VisualizarFormulario() {
               <button type="button" className="ps-btn secondary cancelar" onClick={() => setConfirmar(false)} disabled={ocupado}>
                 Cancelar
               </button>
-              <button type="button" className="ps-btn primary" onClick={() => void alternar()} aria-busy={ocupado}>
+              <button type="button" className={'ps-btn ' + (inativo ? 'primary' : 'danger')} onClick={() => void alternar()} aria-busy={ocupado}>
                 {ocupado ? 'Aguarde…' : inativo ? 'Reativar' : 'Desativar'}
               </button>
             </>

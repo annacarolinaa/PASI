@@ -18,6 +18,9 @@ export function Modal({
   fecharNoX = false,
   largura,
   estiloCorpo,
+  vidro = false,
+  alta = false,
+  focoInicial,
 }: {
   titulo: ReactNode;
   subtitulo?: ReactNode;
@@ -31,6 +34,12 @@ export function Modal({
   fecharNoX?: boolean;
   largura?: number;
   estiloCorpo?: CSSProperties;
+  /** vidro fosco: a tela atrás continua visível (ex.: lista de perguntas) */
+  vidro?: boolean;
+  /** conteúdo longo: o corpo rola e o rodapé fica fixo */
+  alta?: boolean;
+  /** seletor do elemento que recebe o foco ao abrir (padrão: botão principal do rodapé) */
+  focoInicial?: string;
 }) {
   const idT = useId();
   const idD = useId();
@@ -39,6 +48,7 @@ export function Modal({
   useEffect(() => {
     const anterior = document.activeElement as HTMLElement | null;
     const alvo =
+      (focoInicial ? caixa.current?.querySelector<HTMLElement>(focoInicial) : null) ??
       caixa.current?.querySelector<HTMLElement>('footer .ps-btn.primary, footer .ps-btn.danger') ??
       caixa.current?.querySelector<HTMLElement>('button, a, input, textarea, select');
     alvo?.focus({ preventScroll: true });
@@ -49,6 +59,7 @@ export function Modal({
         /* elemento saiu da tela */
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -63,7 +74,7 @@ export function Modal({
   let ico: ReactNode = null;
   if (icone === 'ok')
     ico = (
-      <div className="ico">
+      <div className="ico ok">
         <IcCheck lg />
       </div>
     );
@@ -84,10 +95,10 @@ export function Modal({
   const estilo: CSSProperties | undefined = largura ? { maxWidth: largura } : undefined;
 
   return (
-    <div className="ps-scrim" style={{ position: 'fixed', inset: 0, borderRadius: 0, zIndex: 400 }}>
+    <div className={'ps-scrim' + (vidro ? ' vidro' : '')} style={{ position: 'fixed', inset: 0, borderRadius: 0, zIndex: 400 }}>
       <div
         ref={caixa}
-        className="ps-modal"
+        className={'ps-modal' + (alta ? ' alta' : '')}
         role={alerta ? 'alertdialog' : 'dialog'}
         aria-modal="true"
         aria-labelledby={idT}
@@ -95,7 +106,7 @@ export function Modal({
         style={estilo}
       >
         {ico}
-        <header style={ico ? { paddingTop: 14 } : undefined}>
+        <header>
           {subtitulo ? (
             <div style={{ flex: 1 }}>
               <h3 id={idT}>{titulo}</h3>
@@ -150,7 +161,7 @@ export function ModalCerteza({
           <button type="button" className="ps-btn secondary cancelar" onClick={aoCancelar} disabled={ocupado}>
             Cancelar
           </button>
-          <button type="button" className="ps-btn primary" onClick={aoConfirmar} aria-disabled={ocupado}>
+          <button type="button" className="ps-btn primary" onClick={ocupado ? undefined : aoConfirmar} aria-busy={ocupado}>
             {ocupado ? 'Aguarde…' : rotulo}
           </button>
         </>

@@ -12,6 +12,7 @@ import { Alerta, MensagemErro } from '../components/Form';
 import { Modal } from '../components/Modal';
 import { useAvisos } from '../components/Avisos';
 import { Estado } from '../components/Estado';
+import { EsqBotoes, EsqCabecalho, EsqCampos, EsqItens, EsqKv, EsqPainel, TelaCarregando } from '../components/Esqueleto';
 import { D, Ic } from '../components/icons';
 import { data, dataHora, protocolo } from '../lib/format';
 
@@ -33,7 +34,28 @@ export function AvaliarFormulario() {
   const [erro, setErro] = useState<string | null>(null);
   const avisar = useAvisos();
 
-  if (carga.carregando && !carga.dados) return <Estado texto="Carregando respostas…" />;
+  if (carga.carregando && !carga.dados)
+    return (
+      <TelaCarregando rotulo="Carregando respostas…">
+        <EsqCabecalho migalhas={4} selos={1} />
+        <div className="page-body">
+          <div className="split">
+            <EsqPainel titulo={180}>
+              <EsqItens n={4} numero campo />
+            </EsqPainel>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              <EsqPainel titulo={110}>
+                <EsqKv n={3} colunas={1} />
+              </EsqPainel>
+              <EsqPainel titulo={140}>
+                <EsqCampos n={1} />
+                <EsqBotoes n={1} />
+              </EsqPainel>
+            </div>
+          </div>
+        </div>
+      </TelaCarregando>
+    );
   if (carga.erro || !carga.dados) return <Estado texto={carga.erro ?? 'Formulário não encontrado.'} erro />;
 
   const [a, det, avaliacoes] = carga.dados;

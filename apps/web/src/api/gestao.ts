@@ -102,8 +102,18 @@ export interface NovoProfissional {
 }
 
 export async function cadastrarProfissional(dados: NovoProfissional) {
-  const { data } = await api.post<{ usuario: UsuarioDetalhe } & EnvioSenha>('/gestao/usuarios/profissionais', dados);
+  // usuario vem null se o cadastro foi salvo mas o detalhe falhou logo depois
+  const { data } = await api.post<{ usuario: UsuarioDetalhe | null } & EnvioSenha>('/gestao/usuarios/profissionais', dados);
   return data;
+}
+
+/**
+ * Depois de uma falha sem resposta (tempo esgotado, servidor acordando), confere
+ * se o cadastro chegou a ser salvo, procurando o CPF na lista de usuários.
+ */
+export async function buscarPorCpf(cpf: string) {
+  const r = await listar({ search: cpf, limit: 5 });
+  return r.data.find((u) => u.cpf === cpf) ?? null;
 }
 
 export async function reenviarSenha(id: number) {

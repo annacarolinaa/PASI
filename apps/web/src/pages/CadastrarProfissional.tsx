@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import * as gestao from '../api/gestao';
 import * as apoio from '../api/apoio';
-import { mensagemErro } from '../api/client';
+import { mensagemErro, statusErro } from '../api/client';
 import type { Profissao, Unidade } from '../api/types';
 import { PageHead } from '../components/Layout';
 import { Alerta, Campo, Entrada, Select, MensagemErro } from '../components/Form';
@@ -43,7 +43,7 @@ export function CadastrarProfissional() {
   const [tentou, setTentou] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
-  const [sucesso, setSucesso] = useState<null | { nome: string; email: string; sede: string; expira: string; enviado: boolean }>(null);
+  const [sucesso, setSucesso] = useState<null | { nome: string; email: string; sede: string; expira: string | null; enviado: boolean | null }>(null);
 
   useEffect(() => {
     apoio.profissoes().then(setProfissoes).catch(() => undefined);
@@ -110,6 +110,23 @@ export function CadastrarProfissional() {
         enviado: r.email_enviado,
       });
     } catch (e) {
+      // Sem resposta ou erro do servidor: o cadastro pode ter sido salvo mesmo
+      // assim (ex.: API acordando no Render). Confere antes de mostrar o erro,
+      // para a pessoa não tentar de novo e esbarrar em "CPF já cadastrado".
+      const status = statusErro(e);
+      if (status === undefined || status >= 500) {
+        const salvo = await gestao.buscarPorCpf(soDigitos(cpf)).catch(() => null);
+        if (salvo) {
+          setSucesso({
+            nome: salvo.nome,
+            email: salvo.email,
+            sede: nomeSede ?? '—',
+            expira: salvo.senha_provisoria_expira_em,
+            enviado: null,
+          });
+          return;
+        }
+      }
       setErro(mensagemErro(e));
     } finally {
       setEnviando(false);
@@ -282,7 +299,7 @@ export function CadastrarProfissional() {
             </section>
           </form>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 24, minWidth: 0 }}>
+          <div className="resumo-fixo" style={{ display: 'flex', flexDirection: 'column', gap: 24, minWidth: 0 }}>
             <aside className="panel">
               <header>
                 <h2>O que acontece depois</h2>
@@ -353,9 +370,11 @@ export function CadastrarProfissional() {
           }
         >
           {sucesso.nome} foi cadastrado(a) como {max ? 'máximo' : 'intermediário'}, com sede em {sucesso.sede}.{' '}
-          {sucesso.enviado
-            ? `A senha provisória foi enviada para ${sucesso.email} e vale até ${dataHora(sucesso.expira)}.`
-            : `O cadastro foi salvo, mas o e-mail com a senha não saiu. Use “Reenviar senha provisória” na lista de usuários.`}
+          {sucesso.enviado === null
+            ? `O servidor demorou a responder, mas o cadastro foi salvo. Se o e-mail com a senha não chegar a ${sucesso.email}, use “Reenviar senha provisória” na lista de usuários.`
+            : sucesso.enviado
+              ? `A senha provisória foi enviada para ${sucesso.email} e vale até ${dataHora(sucesso.expira)}.`
+              : `O cadastro foi salvo, mas o e-mail com a senha não saiu. Use “Reenviar senha provisória” na lista de usuários.`}
         </Modal>
       )}
     </div>

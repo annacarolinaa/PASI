@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import * as formApi from '../api/formularios';
 import type { NovaPergunta, Pergunta } from '../api/formularios';
@@ -10,7 +10,8 @@ import { useCarregar } from '../hooks';
 import { PageHead } from '../components/Layout';
 import { Alerta, MensagemErro } from '../components/Form';
 import { Estado } from '../components/Estado';
-import { ModalCerteza } from '../components/Modal';
+import { EsqArquivos, EsqBotoes, EsqCabecalho, EsqCampos, EsqItens, EsqPainel, TelaCarregando } from '../components/Esqueleto';
+import { Modal, ModalCerteza } from '../components/Modal';
 import { useAvisos } from '../components/Avisos';
 import { ArquivoDoc, SoltarArquivo } from '../components/Documentos';
 import { D, Ic, IcCadeado, IcFormulario, IcLapis, IcMais } from '../components/icons';
@@ -21,11 +22,17 @@ import { plural } from '../lib/format';
 interface PerguntaEd extends NovaPergunta {
   id_pergunta?: number;
   respondida?: boolean;
+  /** chave estável na lista (animação de entrada e rolagem até ela) */
+  uid?: string;
 }
+
+let contador = 0;
+const novaUid = () => `n${++contador}`;
 
 function daApi(p: Pergunta): PerguntaEd {
   return {
     id_pergunta: p.id_pergunta,
+    uid: `p${p.id_pergunta}`,
     pergunta: p.pergunta,
     id_tipo_pergunta: p.id_tipo_pergunta,
     obrigatoria: p.obrigatoria !== false,
@@ -58,6 +65,9 @@ const VAZIA: PerguntaEd = {
   opcoes: [{ texto_opcao: '' }, { texto_opcao: '' }],
 };
 
+/** Janela de pergunta aberta: incluir uma nova ou editar a de índice `indice`. */
+type Janela = null | { modo: 'incluir' } | { modo: 'editar'; indice: number };
+
 /** 3.2 Criar / editar formulário (FormularioEditor.dc.html). */
 export function FormularioEditor() {
   const { id } = useParams();
@@ -73,9 +83,13 @@ export function FormularioEditor() {
   const [nome, setNome] = useState('');
   const [descricao, setDescricao] = useState('');
   const [perguntas, setPerguntas] = useState<PerguntaEd[]>([]);
-  const [editando, setEditando] = useState<number | null>(null);
+  const [janela, setJanela] = useState<Janela>(null);
   const [rasc, setRasc] = useState<PerguntaEd>(VAZIA);
   const [erroPergunta, setErroPergunta] = useState<string | null>(null);
+  /** qual botão da janela está trabalhando (mostra a barra de carregamento nele) */
+  const [salvandoPergunta, setSalvandoPergunta] = useState<null | 'fechar' | 'mais'>(null);
+  /** pergunta recém-incluída ou alterada: ganha a animação na lista, atrás do vidro */
+  const [destaque, setDestaque] = useState<{ uid: string; tipo: 'nova' | 'alterada' } | null>(null);
   const [remover, setRemover] = useState<number | null>(null);
   const [fila, setFila] = useState<File[]>([]);
   const [enviandoDoc, setEnviandoDoc] = useState(false);
@@ -84,6 +98,7 @@ export function FormularioEditor() {
   const [salvando, setSalvando] = useState(false);
   const [ocupado, setOcupado] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const tempoDestaque = useRef(0);
 
   useEffect(() => {
     const f = carga.dados;
@@ -94,12 +109,51 @@ export function FormularioEditor() {
     setPerguntas(f.pergunta.map(daApi));
   }, [carga.dados]);
 
-  if (!novo && carga.carregando && !carga.dados) return <Estado texto="Carregando formulário…" />;
+  // A pergunta incluída/alterada aparece atrás do vidro da janela: rola até ela
+  // e tira a classe de animação quando a animação termina.
+  useEffect(() => {
+    if (!destaque) return;
+    const el = document.querySelector<HTMLElement>(`[data-uid="${destaque.uid}"]`);
+    const semMovimento =
+      document.documentElement.classList.contains('a11y-movimento') || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    el?.scrollIntoView({ block: 'center', behavior: semMovimento ? 'auto' : 'smooth' });
+    window.clearTimeout(tempoDestaque.current);
+    tempoDestaque.current = window.setTimeout(() => setDestaque(null), 1300);
+    return () => window.clearTimeout(tempoDestaque.current);
+  }, [destaque]);
+
+  if (!novo && carga.carregando && !carga.dados)
+    return (
+      <TelaCarregando rotulo="Carregando formulário…">
+        <EsqCabecalho migalhas={3} titulo={240} />
+        <div className="page-body">
+          <div className="split">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              <EsqPainel titulo={190}>
+                <EsqCampos n={3} />
+              </EsqPainel>
+              <EsqPainel titulo={140} acao>
+                <EsqItens n={3} numero selos acoes={2} />
+              </EsqPainel>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              <EsqPainel titulo={190}>
+                <EsqArquivos n={2} />
+              </EsqPainel>
+              <EsqPainel titulo={120}>
+                <EsqBotoes n={1} />
+              </EsqPainel>
+            </div>
+          </div>
+        </div>
+      </TelaCarregando>
+    );
   if (!novo && (carga.erro || !carga.dados)) return <Estado texto={carga.erro ?? 'Formulário não encontrado.'} erro />;
 
   const respondido = perguntas.some((p) => p.respondida);
   const nRespostas = carga.dados?._count?.formulario_paciente ?? 0;
-  const mostrarEditor = !respondido || editando !== null;
+  // com respostas, não entram perguntas novas (as não respondidas ainda podem ser editadas)
+  const podeIncluir = !respondido;
   const erros = {
     tipo: tipo === null ? 'Escolha o tipo do formulário.' : null,
     nome: !nome.trim() ? 'Informe o título do formulário.' : null,
@@ -120,35 +174,80 @@ export function FormularioEditor() {
     return null;
   }
 
-  async function incluirOuSalvarPergunta() {
+  function abrirInclusao() {
+    setRasc(VAZIA);
+    setErroPergunta(null);
+    setJanela({ modo: 'incluir' });
+  }
+
+  function abrirEdicao(i: number) {
+    const q = perguntas[i];
+    setRasc({ ...q, opcoes: q.opcoes?.length ? q.opcoes : VAZIA.opcoes });
+    setErroPergunta(null);
+    setJanela({ modo: 'editar', indice: i });
+  }
+
+  function fecharJanela() {
+    if (salvandoPergunta) return;
+    setJanela(null);
+    setErroPergunta(null);
+  }
+
+  /**
+   * Inclui a pergunta (ou salva a edição). `continuar` = "Incluir essa e mais uma":
+   * a janela fica aberta e limpa para a próxima; senão, ela fecha.
+   */
+  async function gravarPergunta(continuar: boolean) {
+    if (!janela || salvandoPergunta) return;
     const problema = validarPergunta(rasc);
     if (problema) {
       setErroPergunta(problema);
       return;
     }
     setErroPergunta(null);
-    const corpo = paraApi(rasc);
+    const editando = janela.modo === 'editar' ? janela.indice : null;
+
+    const depois = (uid: string | undefined, tipoDestaque: 'nova' | 'alterada') => {
+      if (uid) setDestaque({ uid, tipo: tipoDestaque });
+      if (continuar) {
+        setRasc(VAZIA);
+        // o cursor volta para o texto da próxima pergunta
+        window.setTimeout(() => document.getElementById('qt')?.focus(), 0);
+      } else {
+        setJanela(null);
+      }
+    };
+
     // formulário novo: tudo fica na tela até "Salvar formulário"
     if (novo || !idF) {
-      if (editando !== null) setPerguntas(perguntas.map((p, i) => (i === editando ? { ...rasc } : p)));
-      else setPerguntas([...perguntas, { ...rasc }]);
-      setEditando(null);
-      setRasc(VAZIA);
+      if (editando !== null) {
+        const uid = perguntas[editando].uid ?? novaUid();
+        setPerguntas(perguntas.map((p, i) => (i === editando ? { ...rasc, uid } : p)));
+        depois(uid, 'alterada');
+      } else {
+        const uid = novaUid();
+        setPerguntas([...perguntas, { ...rasc, uid }]);
+        depois(uid, 'nova');
+      }
       return;
     }
-    setOcupado(true);
+
+    setSalvandoPergunta(continuar ? 'mais' : 'fechar');
     try {
+      const corpo = paraApi(rasc);
       const alvo = editando !== null ? perguntas[editando] : null;
+      const antes = new Set(perguntas.map((p) => p.id_pergunta));
       if (alvo?.id_pergunta) await formApi.alterarPergunta(idF, alvo.id_pergunta, corpo);
       else await formApi.adicionarPergunta(idF, corpo);
       const f = await carga.recarregar();
-      if (f) setPerguntas(f.pergunta.map(daApi));
-      setEditando(null);
-      setRasc(VAZIA);
+      const lista = f ? f.pergunta.map(daApi) : perguntas;
+      if (f) setPerguntas(lista);
+      if (alvo?.id_pergunta) depois(`p${alvo.id_pergunta}`, 'alterada');
+      else depois(lista.find((p) => !antes.has(p.id_pergunta))?.uid, 'nova');
     } catch (e) {
       setErroPergunta(mensagemErro(e));
     } finally {
-      setOcupado(false);
+      setSalvandoPergunta(null);
     }
   }
 
@@ -221,7 +320,12 @@ export function FormularioEditor() {
     }
   }
 
-  const tituloEditor = editando !== null ? `Editar pergunta ${editando + 1}` : 'Adicionar pergunta';
+  const botaoAdicionar = (grande: boolean) => (
+    <button type="button" className={'ps-btn primary' + (grande ? '' : ' sm')} onClick={abrirInclusao}>
+      <IcMais />
+      Adicionar perguntas
+    </button>
+  );
 
   return (
     <>
@@ -307,103 +411,73 @@ export function FormularioEditor() {
               </div>
             </section>
 
-            <section className="panel">
-              <header>
-                <h2>Perguntas ({perguntas.length})</h2>
-              </header>
-              <div className="pb">
-                {respondido && (
-                  <div className="ps-alert warning">
-                    <IcCadeado lg style={{ color: 'var(--Warning)' }} />
-                    <div className="body">
-                      <strong>Este formulário já tem {plural(nRespostas, 'resposta', 'respostas')}</strong>
-                      Não é possível incluir perguntas. Perguntas já respondidas não podem ser editadas nem excluídas.
-                    </div>
-                  </div>
-                )}
-                {perguntas.length === 0 && (
-                  <p className={'ps-helper' + (tentou && erros.perguntas ? ' error' : '')} style={{ margin: 0 }}>
-                    {tentou && erros.perguntas ? erros.perguntas : 'Nenhuma pergunta ainda. Use o quadro abaixo para incluir.'}
-                  </p>
-                )}
-                {perguntas.map((q, i) => (
-                  <div className="item" style={{ alignItems: 'center' }} key={q.id_pergunta ?? `n${i}`}>
-                    <span className="qnum">{i + 1}</span>
-                    <div className="meta">
-                      <strong style={{ fontWeight: 600 }}>{q.pergunta}</strong>
-                      <span style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
-                        <span className="ps-badge info">{nomeTipoPergunta(q.id_tipo_pergunta, q.valor_minimo, q.valor_maximo)}</span>
-                        {q.obrigatoria !== false && <span className="ps-badge error">Obrigatória</span>}
-                        {q.respondida && <span className="ps-badge neutral">Respondida</span>}
-                      </span>
-                    </div>
-                    {!q.respondida && (
-                      <div className="acts">
-                        <button
-                          type="button"
-                          className="act tt"
-                          aria-label="Editar pergunta"
-                          data-tip="Editar pergunta"
-                          onClick={() => {
-                            setEditando(i);
-                            setRasc({ ...q, opcoes: q.opcoes?.length ? q.opcoes : VAZIA.opcoes });
-                            setErroPergunta(null);
-                          }}
-                        >
-                          <IcLapis />
-                        </button>
-                        <button type="button" className="act tt danger" aria-label="Remover pergunta" data-tip="Remover pergunta" onClick={() => setRemover(i)}>
-                          <Ic d={D.lixeira} />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))}
+            {perguntas.length === 0 ? (
+              // Sem perguntas ainda: só o botão. A seção "Perguntas" aparece com a primeira.
+              <div className="add-perguntas">
+                {podeIncluir && botaoAdicionar(true)}
+                {tentou && erros.perguntas && <MensagemErro>{erros.perguntas}</MensagemErro>}
               </div>
-            </section>
-
-            {mostrarEditor && (
-              <section className="panel">
+            ) : (
+              <section className="panel painel-entra">
                 <header>
-                  <h2>{tituloEditor}</h2>
-                  {editando !== null && (
-                    <button
-                      type="button"
-                      className="ps-btn tertiary sm"
-                      onClick={() => {
-                        setEditando(null);
-                        setRasc(VAZIA);
-                        setErroPergunta(null);
-                      }}
-                    >
-                      Cancelar edição
-                    </button>
-                  )}
+                  <h2>Perguntas ({perguntas.length})</h2>
+                  {podeIncluir && botaoAdicionar(false)}
                 </header>
                 <div className="pb">
-                  <EditorPergunta p={rasc} aoMudar={setRasc} />
-                  {erroPergunta && <MensagemErro>{erroPergunta}</MensagemErro>}
-                  <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                    <button
-                      type="button"
-                      className={'ps-check' + (rasc.obrigatoria !== false ? ' is-checked' : '')}
-                      aria-pressed={rasc.obrigatoria !== false}
-                      onClick={() => setRasc({ ...rasc, obrigatoria: rasc.obrigatoria === false })}
-                      style={{ alignItems: 'center', minHeight: 0, padding: 0, border: 0, background: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
-                    >
-                      <span className="ps-switch" />
-                      Pergunta obrigatória
-                    </button>
-                    <button type="button" className="ps-btn secondary" onClick={() => void incluirOuSalvarPergunta()} aria-busy={ocupado}>
-                      {editando !== null ? 'Salvar pergunta' : '+ Incluir pergunta'}
-                    </button>
-                  </div>
+                  {respondido && (
+                    <div className="ps-alert warning">
+                      <IcCadeado lg style={{ color: 'var(--Warning)' }} />
+                      <div className="body">
+                        <strong>Este formulário já tem {plural(nRespostas, 'resposta', 'respostas')}</strong>
+                        Não é possível incluir perguntas. Perguntas já respondidas não podem ser editadas nem excluídas.
+                      </div>
+                    </div>
+                  )}
+                  {perguntas.map((q, i) => {
+                    const anima =
+                      destaque && destaque.uid === q.uid ? (destaque.tipo === 'nova' ? ' pergunta-nova' : ' pergunta-alterada') : '';
+                    return (
+                      <div className={'item' + anima} style={{ alignItems: 'center' }} key={q.uid ?? `i${i}`} data-uid={q.uid}>
+                        <span className="qnum">{i + 1}</span>
+                        <div className="meta">
+                          <strong style={{ fontWeight: 600 }}>{q.pergunta}</strong>
+                          <span className="selos-linha" style={{ marginTop: 6 }}>
+                            <span className="ps-badge info">{nomeTipoPergunta(q.id_tipo_pergunta, q.valor_minimo, q.valor_maximo)}</span>
+                            {q.obrigatoria !== false && <span className="ps-badge error">Obrigatória</span>}
+                            {q.respondida && <span className="ps-badge neutral">Respondida</span>}
+                          </span>
+                        </div>
+                        {!q.respondida && (
+                          <div className="acts">
+                            <button
+                              type="button"
+                              className="act tt"
+                              aria-label={`Editar pergunta ${i + 1}`}
+                              data-tip="Editar pergunta"
+                              onClick={() => abrirEdicao(i)}
+                            >
+                              <IcLapis />
+                            </button>
+                            <button
+                              type="button"
+                              className="act tt danger"
+                              aria-label={`Remover pergunta ${i + 1}`}
+                              data-tip="Remover pergunta"
+                              onClick={() => setRemover(i)}
+                            >
+                              <Ic d={D.lixeira} />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </section>
             )}
           </div>
 
-          <aside style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          <aside className="resumo-fixo" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <section className="panel">
               <header>
                 <h2>Documentos de apoio</h2>
@@ -450,6 +524,88 @@ export function FormularioEditor() {
           </aside>
         </div>
       </div>
+
+      {janela && (
+        <Modal
+          vidro
+          alta
+          largura={760}
+          titulo={janela.modo === 'editar' ? `Editar pergunta ${janela.indice + 1}` : 'Adicionar pergunta'}
+          subtitulo={
+            janela.modo === 'incluir'
+              ? perguntas.length
+                ? `${plural(perguntas.length, 'pergunta', 'perguntas')} no formulário até agora.`
+                : 'A primeira pergunta do formulário.'
+              : undefined
+          }
+          aoFechar={salvandoPergunta ? undefined : fecharJanela}
+          fecharNoX
+          focoInicial="#qt"
+          estiloCorpo={{ display: 'flex', flexDirection: 'column', gap: 16 }}
+          rodape={
+            janela.modo === 'incluir' ? (
+              <>
+                {erroPergunta && (
+                  <div className="erro-rodape">
+                    <MensagemErro>{erroPergunta}</MensagemErro>
+                  </div>
+                )}
+                <button type="button" className="ps-btn secondary cancelar" onClick={fecharJanela} disabled={!!salvandoPergunta}>
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  className="ps-btn primary"
+                  onClick={() => void gravarPergunta(false)}
+                  aria-busy={salvandoPergunta === 'fechar'}
+                >
+                  {salvandoPergunta === 'fechar' ? 'Incluindo…' : 'Incluir e fechar'}
+                </button>
+                <button
+                  type="button"
+                  className="ps-btn secondary"
+                  onClick={() => void gravarPergunta(true)}
+                  aria-busy={salvandoPergunta === 'mais'}
+                >
+                  <IcMais />
+                  {salvandoPergunta === 'mais' ? 'Incluindo…' : 'Incluir essa e mais uma'}
+                </button>
+              </>
+            ) : (
+              <>
+                {erroPergunta && (
+                  <div className="erro-rodape">
+                    <MensagemErro>{erroPergunta}</MensagemErro>
+                  </div>
+                )}
+                <button type="button" className="ps-btn secondary cancelar" onClick={fecharJanela} disabled={!!salvandoPergunta}>
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  className="ps-btn primary"
+                  onClick={() => void gravarPergunta(false)}
+                  aria-busy={salvandoPergunta === 'fechar'}
+                >
+                  {salvandoPergunta === 'fechar' ? 'Salvando…' : 'Salvar pergunta'}
+                </button>
+              </>
+            )
+          }
+        >
+          <EditorPergunta p={rasc} aoMudar={setRasc} />
+          <button
+            type="button"
+            className={'ps-check' + (rasc.obrigatoria !== false ? ' is-checked' : '')}
+            aria-pressed={rasc.obrigatoria !== false}
+            onClick={() => setRasc({ ...rasc, obrigatoria: rasc.obrigatoria === false })}
+            style={{ alignSelf: 'flex-start', alignItems: 'center', minHeight: 0, padding: 0, border: 0, background: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+          >
+            <span className="ps-switch" />
+            Pergunta obrigatória
+          </button>
+        </Modal>
+      )}
 
       {remover !== null && (
         <ModalCerteza

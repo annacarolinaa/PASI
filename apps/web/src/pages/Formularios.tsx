@@ -7,6 +7,7 @@ import { mensagemErro } from '../api/client';
 import { useAtrasado, useCarregar } from '../hooks';
 import { PageHead } from '../components/Layout';
 import { BarraBusca, LinhaEstado, PainelFiltros, Paginacao } from '../components/Lista';
+import { LinhasEsqueleto } from '../components/Esqueleto';
 import { Select } from '../components/Form';
 import { useAvisos } from '../components/Avisos';
 import { Seg } from '../components/Seg';
@@ -51,6 +52,7 @@ export function Formularios() {
 
   const nAtivos = (ap.tipo !== 'todos' ? 1 : 0) + (ap.status !== 'todos' ? 1 : 0) + (ap.ordem !== F0.ordem ? 1 : 0);
   const total = dados?.total ?? 0;
+  const buscando = busca !== buscaAtrasada || carregando;
   const alvoInativo = alvo ? alvo.ativo === false : false;
 
   async function confirmar() {
@@ -105,6 +107,7 @@ export function Formularios() {
               setRasc(ap);
             }}
             nFiltros={nAtivos}
+            buscando={buscando && !!dados}
           />
           <PainelFiltros
             aberto={aberto}
@@ -169,8 +172,8 @@ export function Formularios() {
                 </tr>
               </thead>
               <tbody>
-                {carregando && !dados ? (
-                  <LinhaEstado colunas={6}>Carregando formulários…</LinhaEstado>
+                {buscando && !erro ? (
+                  <LinhasEsqueleto colunas={6} rotulo={dados ? 'Buscando formulários…' : 'Carregando formulários…'} />
                 ) : erro ? (
                   <LinhaEstado colunas={6}>
                     {erro}{' '}
@@ -187,7 +190,7 @@ export function Formularios() {
                     const acao = inativo ? 'Ativar formulário' : 'Desativar formulário';
                     return (
                       <tr key={f.id_formulario}>
-                        <td>
+                        <td className="cel-titulo">
                           <div className="nm">
                             <span className={'dot tt ' + (inativo ? 'off' : 'on')} data-tip={dot} tabIndex={0} role="img" aria-label={dot} />
                             <div className="nm-txt">
@@ -196,13 +199,13 @@ export function Formularios() {
                             </div>
                           </div>
                         </td>
-                        <td>
+                        <td data-rotulo="Tipo">
                           <SeloTipo nome={f.tipo_formulario?.nome} />
                         </td>
-                        <td className="num">{f._count?.pergunta ?? 0}</td>
-                        <td className="num">{f._count?.formulario_paciente ?? 0}</td>
-                        <td className="num">{data(f.dt_cadastro)}</td>
-                        <td>
+                        <td className="num" data-rotulo="Perguntas">{f._count?.pergunta ?? 0}</td>
+                        <td className="num" data-rotulo="Respostas">{f._count?.formulario_paciente ?? 0}</td>
+                        <td className="num" data-rotulo="Criado em">{data(f.dt_cadastro)}</td>
+                        <td className="cel-acoes">
                           <div className="row-actions">
                             <Link className="act tt" to={`/formularios/${f.id_formulario}`} aria-label="Visualizar formulário" data-tip="Visualizar formulário">
                               <IcOlhoAcao />
@@ -250,7 +253,7 @@ export function Formularios() {
               <button type="button" className="ps-btn secondary cancelar" onClick={() => setAlvo(null)} disabled={ocupado}>
                 Cancelar
               </button>
-              <button type="button" className="ps-btn primary" onClick={() => void confirmar()} aria-busy={ocupado}>
+              <button type="button" className={'ps-btn ' + (alvoInativo ? 'primary' : 'danger')} onClick={() => void confirmar()} aria-busy={ocupado}>
                 {ocupado ? 'Aguarde…' : alvoInativo ? 'Reativar' : 'Desativar'}
               </button>
             </>

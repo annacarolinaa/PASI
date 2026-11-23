@@ -5,6 +5,7 @@ import { useCarregar } from '../hooks';
 import { Select, MensagemErro } from './Form';
 import { Modal } from './Modal';
 import { Ic } from './icons';
+import { Esq } from './Esqueleto';
 import { data } from '../lib/format';
 
 const PREDIO = 'M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6';
@@ -97,7 +98,7 @@ export function ConfirmaSimples({
           <button type="button" className="ps-btn secondary cancelar" onClick={aoFechar} disabled={ocupado}>
             Cancelar
           </button>
-          <button type="button" className={'ps-btn ' + (perigo ? 'danger' : 'primary')} onClick={aoConfirmar} aria-busy={ocupado}>
+          <button type="button" className={'ps-btn ' + (perigo ? 'danger' : 'primary')} onClick={ocupado ? undefined : aoConfirmar} aria-busy={ocupado}>
             {ocupado ? 'Aguarde…' : botao}
           </button>
         </>
@@ -164,14 +165,21 @@ export function ModalVincular({
         <label className="ps-label" htmlFor="nova-un">
           Unidade de atendimento
         </label>
-        <Select id="nova-un" valor={idUn} aoMudar={(v) => setIdUn(v ? Number(v) : '')} invalido={erro && idUn === ''}>
-          <option value="">{todas ? 'Selecione a unidade' : 'Carregando…'}</option>
-          {livres.map((x) => (
-            <option key={x.id_unidade_atendimento} value={x.id_unidade_atendimento}>
-              {x.nome}
-            </option>
-          ))}
-        </Select>
+        {todas ? (
+          <Select id="nova-un" valor={idUn} aoMudar={(v) => setIdUn(v ? Number(v) : '')} invalido={erro && idUn === ''}>
+            <option value="">Selecione a unidade</option>
+            {livres.map((x) => (
+              <option key={x.id_unidade_atendimento} value={x.id_unidade_atendimento}>
+                {x.nome}
+              </option>
+            ))}
+          </Select>
+        ) : (
+          <div role="status" aria-busy="true">
+            <span className="ps-sr">Carregando unidades…</span>
+            <Esq h={48} r={10} />
+          </div>
+        )}
         {erro && idUn === '' && <MensagemErro>Escolha a unidade.</MensagemErro>}
         <div className="ps-helper">Só aparecem unidades ainda não vinculadas.</div>
       </div>

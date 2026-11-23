@@ -12,6 +12,7 @@ export function BarraBusca({
   aoAlternarFiltros,
   nFiltros = 0,
   inline = false,
+  buscando = false,
 }: {
   busca: string;
   aoBuscar: (v: string) => void;
@@ -21,11 +22,18 @@ export function BarraBusca({
   aoAlternarFiltros?: () => void;
   nFiltros?: number;
   inline?: boolean;
+  /** a lista está sendo buscada de novo (digitação, filtros): mostra o giro e a barra no grid */
+  buscando?: boolean;
 }) {
   return (
+    <>
     <div className={'toolbar' + (inline ? ' tb-inline' : '')}>
       <label className="ps-search">
-        <IcBusca style={{ color: 'var(--Text-muted)' }} />
+        {buscando ? (
+          <span className="giro" style={{ color: 'var(--Link)' }} aria-hidden="true" />
+        ) : (
+          <IcBusca style={{ color: 'var(--Text-muted)' }} />
+        )}
         <span className="ps-sr">{rotuloBusca}</span>
         <input type="search" placeholder={placeholder} value={busca} onChange={(e) => aoBuscar(e.target.value)} />
       </label>
@@ -43,6 +51,12 @@ export function BarraBusca({
         </button>
       )}
     </div>
+    {!inline && (
+      <div className={'busca-barra' + (buscando ? ' is-on' : '')} role="status" aria-live="polite">
+        <span className="ps-sr">{buscando ? 'Buscando…' : ''}</span>
+      </div>
+    )}
+    </>
   );
 }
 
@@ -122,14 +136,14 @@ export function Paginacao({
       </span>
       <nav className="ps-pagination" aria-label="Paginação">
         {pagina <= 1 ? (
-          <span className="ps-page nav is-disabled" aria-disabled="true">
+          <span className="ps-page nav is-disabled" aria-disabled="true" aria-label="Página anterior">
             <Ic d={D.chevronEsq} />
-            Anterior
+            <span className="pg-rot">Anterior</span>
           </span>
         ) : (
-          <a className="ps-page nav" href="#" onClick={ir(pagina - 1)}>
+          <a className="ps-page nav" href="#" onClick={ir(pagina - 1)} aria-label="Página anterior">
             <Ic d={D.chevronEsq} />
-            Anterior
+            <span className="pg-rot">Anterior</span>
           </a>
         )}
         {paginas(pagina, ultima).map((p, i) =>
@@ -148,13 +162,13 @@ export function Paginacao({
           ),
         )}
         {pagina >= ultima ? (
-          <span className="ps-page nav is-disabled" aria-disabled="true">
-            Próxima
+          <span className="ps-page nav is-disabled" aria-disabled="true" aria-label="Próxima página">
+            <span className="pg-rot">Próxima</span>
             <Ic d={D.chevronDir} />
           </span>
         ) : (
-          <a className="ps-page nav" href="#" onClick={ir(pagina + 1)}>
-            Próxima
+          <a className="ps-page nav" href="#" onClick={ir(pagina + 1)} aria-label="Próxima página">
+            <span className="pg-rot">Próxima</span>
             <Ic d={D.chevronDir} />
           </a>
         )}

@@ -11,6 +11,7 @@ import { PageHead, PanelTitle } from '../components/Layout';
 import { BarraBusca, PainelFiltros } from '../components/Lista';
 import { Alerta, Select, MensagemErro } from '../components/Form';
 import { useAvisos } from '../components/Avisos';
+import { Esq, EsqEscolhas } from '../components/Esqueleto';
 import { Seg } from '../components/Seg';
 import { IcBusca, IcFormulario } from '../components/icons';
 import { cpf, iniciais, plural } from '../lib/format';
@@ -112,7 +113,6 @@ export function NovoAtendimento() {
         ]}
         voltar="/atendimentos"
         titulo="Novo atendimento"
-        dica="Escolha o paciente e os formulários que ele vai responder no app."
       />
 
       <div className="page-body">
@@ -125,7 +125,7 @@ export function NovoAtendimento() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <section className="panel">
               <header>
-                <PanelTitle id="h-pac" dica="Busque por nome ou CPF (a partir de 2 caracteres, até 20 resultados).">
+                <PanelTitle id="h-pac">
                   Paciente{' '}
                   <span className="req" aria-hidden="true">
                     *
@@ -186,7 +186,7 @@ export function NovoAtendimento() {
 
             <section className="panel">
               <header>
-                <PanelTitle id="unidade-titulo" dica="O intermediário escolhe entre as unidades dele; o máximo, qualquer unidade.">
+                <PanelTitle id="unidade-titulo">
                   Unidade de atendimento{' '}
                   <span className="req" aria-hidden="true">
                     *
@@ -195,6 +195,12 @@ export function NovoAtendimento() {
               </header>
               <div className="pb">
                 <div className="ps-field">
+                  {unidades.carregando ? (
+                    <div role="status" aria-busy="true">
+                      <span className="ps-sr">Carregando unidades…</span>
+                      <Esq h={48} r={10} />
+                    </div>
+                  ) : (
                   <Select
                     id="unidade"
                     valor={idUnidade}
@@ -204,7 +210,7 @@ export function NovoAtendimento() {
                     rotuladoPor="unidade-titulo"
                     descritoPor={tentou && idUnidade === '' ? 'unidade-erro' : undefined}
                   >
-                    {idUnidade === '' && <option value="">{unidades.carregando ? 'Carregando…' : 'Selecione'}</option>}
+                    {idUnidade === '' && <option value="">Selecione</option>}
                     {unidades.lista.map((u) => (
                       <option key={u.id_unidade_atendimento} value={u.id_unidade_atendimento}>
                         {u.nome}
@@ -212,6 +218,7 @@ export function NovoAtendimento() {
                       </option>
                     ))}
                   </Select>
+                  )}
                   {tentou && idUnidade === '' && (
                     <MensagemErro id="unidade-erro">Escolha a unidade do atendimento.</MensagemErro>
                   )}
@@ -221,7 +228,7 @@ export function NovoAtendimento() {
 
             <section className="panel">
               <header>
-                <PanelTitle dica="Só formulários ativos aparecem. Escolha pelo menos 1.">Formulários</PanelTitle>
+                <PanelTitle>Formulários</PanelTitle>
               </header>
               <div className="pb">
                 <BarraBusca
@@ -263,7 +270,7 @@ export function NovoAtendimento() {
                   </div>
                 </PainelFiltros>
                 {carregandoForms && !forms ? (
-                  <div className="ps-helper">Carregando formulários…</div>
+                  <EsqEscolhas n={3} />
                 ) : visiveis.length === 0 ? (
                   <div className="ps-helper">Nenhum formulário ativo encontrado.</div>
                 ) : (
@@ -302,7 +309,7 @@ export function NovoAtendimento() {
 
             <section className="panel">
               <header>
-                <PanelTitle id="h-desc" dica="Opcional. Ajuda a identificar o atendimento na lista.">
+                <PanelTitle id="h-desc">
                   Descrição <span className="opt">(opcional)</span>
                 </PanelTitle>
               </header>
@@ -326,7 +333,7 @@ export function NovoAtendimento() {
             </section>
           </div>
 
-          <aside className="panel" style={{ position: 'sticky', top: 24 }}>
+          <aside className="panel resumo-fixo">
             <header>
               <h2>Resumo</h2>
             </header>

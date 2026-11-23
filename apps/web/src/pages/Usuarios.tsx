@@ -7,6 +7,7 @@ import { SituacaoUsuario, TipoUsuario } from '../api/types';
 import { useAtrasado, useCarregar } from '../hooks';
 import { PageHead } from '../components/Layout';
 import { BarraBusca, LinhaEstado, PainelFiltros, Paginacao } from '../components/Lista';
+import { LinhasEsqueleto } from '../components/Esqueleto';
 import { Select } from '../components/Form';
 import { useAvisos } from '../components/Avisos';
 import { Seg } from '../components/Seg';
@@ -61,6 +62,7 @@ export function Usuarios() {
     { id: SituacaoUsuario.DEFERIDO, nome: 'Deferidos', n: c?.deferido ?? 0 },
   ];
   const total = dados?.total ?? 0;
+  const buscando = busca !== buscaAtrasada || carregando;
   const abrir = (acao: AcaoUsuario, alvo: UsuarioLista) => () => setModal({ acao, alvo });
 
   return (
@@ -109,6 +111,7 @@ export function Usuarios() {
               setRasc(ap);
             }}
             nFiltros={nAtivos}
+            buscando={buscando && !!dados}
           />
           <PainelFiltros
             aberto={aberto}
@@ -189,8 +192,8 @@ export function Usuarios() {
                 </tr>
               </thead>
               <tbody>
-                {carregando && !dados ? (
-                  <LinhaEstado colunas={5}>Carregando usuários…</LinhaEstado>
+                {buscando && !erro ? (
+                  <LinhasEsqueleto colunas={5} rotulo={dados ? 'Buscando usuários…' : 'Carregando usuários…'} />
                 ) : erro ? (
                   <LinhaEstado colunas={5}>
                     {erro}{' '}
@@ -243,7 +246,7 @@ function Linha({ u, abrir }: { u: UsuarioLista; abrir: (a: AcaoUsuario, alvo: Us
   const p = u.permissoes;
   return (
     <tr>
-      <td>
+      <td className="cel-titulo">
         <div className="nm">
           <span className={'dot tt ' + (u.ativo ? 'on' : 'off')} data-tip={dot} tabIndex={0} role="img" aria-label={dot} />
           <div className="nm-txt">
@@ -255,11 +258,11 @@ function Linha({ u, abrir }: { u: UsuarioLista; abrir: (a: AcaoUsuario, alvo: Us
           </div>
         </div>
       </td>
-      <td>
+      <td data-rotulo="Perfil">
         <span className={perfil.c}>{perfil.t}</span>
         <small style={{ marginTop: 4 }}>{u.profissao?.nome ?? '—'}</small>
       </td>
-      <td>
+      <td data-rotulo="Situação">
         {sit && (
           <span className={sit.c}>
             <Ic d={sit.i} />
@@ -267,7 +270,7 @@ function Linha({ u, abrir }: { u: UsuarioLista; abrir: (a: AcaoUsuario, alvo: Us
           </span>
         )}
       </td>
-      <td>
+      <td className="cel-larga" data-rotulo="Observação">
         {nota ? (
           <span className={'refusals' + (nota.alerta ? ' high' : '')}>
             <Ic d={nota.icone} style={{ width: 14, height: 14 }} />
@@ -277,7 +280,7 @@ function Linha({ u, abrir }: { u: UsuarioLista; abrir: (a: AcaoUsuario, alvo: Us
           <span style={{ color: 'var(--Text-muted)' }}>—</span>
         )}
       </td>
-      <td>
+      <td className="cel-acoes">
         <div className="row-actions">
           {p.reenviar_senha && !u.eu && (
             <button type="button" className="act tt" aria-label="Reenviar senha provisória" data-tip="Reenviar senha provisória" onClick={abrir('reenviar', u)}>

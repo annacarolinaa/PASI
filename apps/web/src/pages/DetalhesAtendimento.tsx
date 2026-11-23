@@ -7,6 +7,7 @@ import { SituacaoAtendimento as SA, SituacaoFormulario as SF, type AtendimentoFo
 import { useCarregar } from '../hooks';
 import { PageHead, PanelTitle } from '../components/Layout';
 import { Estado } from '../components/Estado';
+import { EsqBotoes, EsqCabecalho, EsqItens, EsqKv, EsqPainel, TelaCarregando } from '../components/Esqueleto';
 import { useAvisos } from '../components/Avisos';
 import { Modal, ModalCerteza } from '../components/Modal';
 import { resetarSlides, Slide } from '../components/Slide';
@@ -26,7 +27,28 @@ export function DetalhesAtendimento() {
   const [ocupado, setOcupado] = useState(false);
   const avisar = useAvisos();
 
-  if (carregando && !a) return <Estado texto="Carregando atendimento…" />;
+  if (carregando && !a)
+    return (
+      <TelaCarregando rotulo="Carregando atendimento…">
+        <EsqCabecalho migalhas={3} selos={1} acoes={2} />
+        <div className="page-body">
+          <div className="split">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              <EsqPainel titulo={130}>
+                <EsqKv n={6} />
+              </EsqPainel>
+              <EsqPainel titulo={200} acao>
+                <EsqItens n={3} selos acoes={2} />
+              </EsqPainel>
+            </div>
+            <EsqPainel titulo={210}>
+              <EsqKv n={2} colunas={1} />
+              <EsqBotoes n={1} />
+            </EsqPainel>
+          </div>
+        </div>
+      </TelaCarregando>
+    );
   if (erro || !a) return <Estado texto={erro ?? 'Atendimento não encontrado.'} erro />;
 
   const pac = a.usuario_atendimento_id_usuario_pacienteTousuario;

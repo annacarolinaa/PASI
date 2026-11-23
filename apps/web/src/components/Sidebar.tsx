@@ -6,12 +6,12 @@ import { SituacaoUsuario, TipoUsuario } from '../api/types';
 import { iniciais } from '../lib/format';
 import { contarPendentes } from '../api/gestao';
 import { SeletorTema } from './Tema';
-import { IcAtendimentos, IcCadeadoMenu, IcFormulario, IcPessoa, IcUsuarios, Ic, D } from './icons';
+import { IcAtendimentos, IcCadeadoMenu, IcFormulario, IcPessoa, IcUsuarios, Ic, IcFechar, D } from './icons';
 
 const cls = ({ isActive }: { isActive: boolean }) => 'nav-item' + (isActive ? ' is-active' : '');
 
 /** Menu lateral do painel (Sidebar.dc.html). */
-export function Sidebar() {
+export function Sidebar({ aoEsconder, rotuloFechar }: { aoEsconder?: () => void; rotuloFechar?: string } = {}) {
   const { usuario, ehMaximo, sair } = useAuth();
   const navegar = useNavigate();
   const bloqueado = usuario?.id_situacao_usuario !== SituacaoUsuario.DEFERIDO;
@@ -39,10 +39,19 @@ export function Sidebar() {
     <aside className="ps side" aria-label="Menu do painel">
       <div className="brand">
         <img src={logo} alt="PASI" />
-        <span>Profissional</span>
+        {aoEsconder && (
+          <button
+            type="button"
+            className={'menu-fechar' + (rotuloFechar ? '' : ' tt')}
+            onClick={aoEsconder}
+            aria-label={rotuloFechar ?? 'Esconder menu lateral'}
+            data-tip={rotuloFechar ? undefined : 'Esconder menu'}
+          >
+            <IcFechar />
+          </button>
+        )}
       </div>
       <nav aria-label="Principal">
-        <span className="nav-label">Menu</span>
         {!bloqueado ? (
           <>
             <NavLink className={cls} to="/atendimentos">
@@ -72,10 +81,7 @@ export function Sidebar() {
           <IcPessoa lg />
           Meu perfil
         </NavLink>
-      </nav>
-      {ehMaximo && !bloqueado && (
-        <nav aria-label="Gestão">
-          <span className="nav-label">Gestão</span>
+        {ehMaximo && !bloqueado && (
           <NavLink className={cls} to="/usuarios">
             <IcUsuarios lg />
             Usuários
@@ -85,10 +91,11 @@ export function Sidebar() {
               </span>
             )}
           </NavLink>
-        </nav>
-      )}
+        )}
+      </nav>
       <SeletorTema />
-      <div className="user">
+      <div className="user-bloco">
+        <div className="user">
         <span className="avatar" aria-hidden="true">
           {iniciais(usuario?.nome)}
         </span>
@@ -108,6 +115,7 @@ export function Sidebar() {
         >
           <Ic d={D.sair} />
         </button>
+        </div>
       </div>
     </aside>
   );

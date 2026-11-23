@@ -4,7 +4,7 @@
  */
 
 export const TipoUsuario = {
-  PROFISSIONAL: 1,
+  /** Único perfil que acessa o app; profissionais usam o painel web. */
   PACIENTE: 2,
 } as const;
 

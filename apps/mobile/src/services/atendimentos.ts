@@ -62,22 +62,4 @@ export const atendimentosService = {
     api.get<ListaAtendimentos>('/atendimentos', { params }).then((r) => r.data),
 
   buscar: (id: number) => api.get<Atendimento>(`/atendimentos/${id}`).then((r) => r.data),
-
-  criar: (data: { descricao?: string; id_usuario_paciente: number; formularios: number[] }) =>
-    api.post<Atendimento>('/atendimentos', data).then((r) => r.data),
-
-  atualizar: (id: number, data: { descricao?: string; id_usuario_paciente?: number }) =>
-    api.patch<Atendimento>(`/atendimentos/${id}`, data).then((r) => r.data),
-
-  atribuirFormularios: (id: number, formularios: number[]) =>
-    api.post<Atendimento>(`/atendimentos/${id}/formularios`, { formularios }).then((r) => r.data),
-
-  removerFormulario: (id: number, idFormulario: number) =>
-    api.delete(`/atendimentos/${id}/formularios/${idFormulario}`).then((r) => r.data),
-
-  encerrar: (id: number) =>
-    api.patch<Atendimento>(`/atendimentos/${id}/encerrar`).then((r) => r.data),
-
-  listarPacientes: (search?: string) =>
-    api.get<Paciente[]>('/usuarios/pacientes', { params: { search } }).then((r) => r.data),
 };

@@ -18,7 +18,8 @@ export function SplashScreen() {
       <View className="items-center flex-1 justify-center">
         <Image
           source={require('../../assets/logo.png')}
-          style={{ width: 240, height: 240 }}
+          style={{ width: 240, height: 87 }}
+          accessibilityLabel="PASI"
           resizeMode="contain"
         />
       </View>

@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setAuthToken } from '../config/api';
+import { TipoUsuario } from '../constants/dominio';
 
 export interface AuthUser {
   id_usuario: number;
   nome: string;
   email: string;
-  tipo: number; // 1=Profissional 2=Paciente
+  tipo: number; // id_tipo_usuario — no app é sempre 2 (paciente)
 }
 
 interface AuthContextType {
@@ -30,10 +31,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       ([tokenEntry, usuarioEntry]) => {
         const saved = tokenEntry[1];
         const savedUser = usuarioEntry[1];
-        if (saved && savedUser) {
+        const user = savedUser ? (JSON.parse(savedUser) as AuthUser) : null;
+        if (saved && user?.tipo === TipoUsuario.PACIENTE) {
           setToken(saved);
-          setUsuario(JSON.parse(savedUser) as AuthUser);
+          setUsuario(user);
           setAuthToken(saved);
+        } else if (saved || savedUser) {
+          // Sessão de profissional salva por versões antigas do app: o
+          // acesso dele agora é só pelo painel web.
+          AsyncStorage.multiRemove(['@pasi:token', '@pasi:usuario']).catch(() => null);
         }
         setIsLoading(false);
       },

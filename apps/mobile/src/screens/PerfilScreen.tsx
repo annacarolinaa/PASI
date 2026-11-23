@@ -25,7 +25,7 @@ import { useFeedback } from '../context/FeedbackContext';
 import { useScrollToError } from '../hooks/useScrollToError';
 import { usuariosService, AtualizarPerfilPayload } from '../services/usuarios';
 import { apoioService } from '../services/apoio';
-import { SEXO_OPCOES, Sexo, TipoUsuario } from '../constants/dominio';
+import { SEXO_OPCOES, Sexo } from '../constants/dominio';
 import { colors } from '../constants/colors';
 import { formatTelefone, cleanMask } from '../utils/masks';
 import { isEmailValido } from '../utils/validation';
@@ -45,12 +45,10 @@ function iniciais(nome?: string) {
 
 export function PerfilScreen() {
   const navigation = useNavigation();
-  const { usuario, updateUsuario } = useAuth();
+  const { updateUsuario } = useAuth();
   const { foto, setFoto } = useProfilePhoto();
   const { toast } = useFeedback();
   const { scrollRef, registrarBase, registrar, scrollPara } = useScrollToError();
-
-  const isProfissional = usuario?.tipo === TipoUsuario.PROFISSIONAL;
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -146,11 +144,9 @@ export function PerfilScreen() {
     if (!nome.trim()) e.nome = 'Informe o nome completo';
     if (!isEmailValido(email)) e.email = 'E-mail inválido (ex.: nome@dominio.com)';
     if (cleanMask(tel).length < 10) e.tel = 'Telefone inválido';
-    if (!isProfissional) {
-      if (dtNascimento && !brParaIso(dtNascimento)) e.dtNascimento = 'Data inválida (dd/mm/aaaa)';
-      if (cleanMask(cep).length !== 8) e.cep = 'Informe um CEP válido';
-      if (!numero.trim()) e.numero = 'Informe o número';
-    }
+    if (dtNascimento && !brParaIso(dtNascimento)) e.dtNascimento = 'Data inválida (dd/mm/aaaa)';
+    if (cleanMask(cep).length !== 8) e.cep = 'Informe um CEP válido';
+    if (!numero.trim()) e.numero = 'Informe o número';
     setErrors(e);
     if (Object.keys(e).length > 0) {
       scrollPara(['nome', 'email', 'tel', 'dtNascimento'].filter((k) => e[k]));
@@ -165,22 +161,17 @@ export function PerfilScreen() {
         tel_celular: cleanMask(tel),
         sexo: sexo ?? 'O',
         id_genero: idGenero ?? undefined,
-        // Endereço e nascimento só fazem parte do perfil do paciente.
-        ...(isProfissional
-          ? {}
-          : {
-              // Campo vazio envia null para apagar a data (já validada acima).
-              dt_nascimento: brParaIso(dtNascimento) ?? null,
-              nac_estrangeira: nacEstrangeira,
-              cep: cleanMask(cep) || undefined,
-              logradouro: logradouro.trim() || undefined,
-              numero: numero.trim() || undefined,
-              complemento: complemento.trim() || undefined,
-              bairro: bairro.trim() || undefined,
-              cidade: cidade.trim() || undefined,
-              estado: estado.trim() || undefined,
-              pais: pais.trim() || undefined,
-            }),
+        // Campo vazio envia null para apagar a data (já validada acima).
+        dt_nascimento: brParaIso(dtNascimento) ?? null,
+        nac_estrangeira: nacEstrangeira,
+        cep: cleanMask(cep) || undefined,
+        logradouro: logradouro.trim() || undefined,
+        numero: numero.trim() || undefined,
+        complemento: complemento.trim() || undefined,
+        bairro: bairro.trim() || undefined,
+        cidade: cidade.trim() || undefined,
+        estado: estado.trim() || undefined,
+        pais: pais.trim() || undefined,
       };
       await usuariosService.atualizarPerfil(payload);
       await updateUsuario({ nome: payload.nome, email: payload.email });
@@ -225,7 +216,7 @@ export function PerfilScreen() {
             </View>
           </TouchableOpacity>
           <Text className="text-primary font-bold text-base mt-3">{nome}</Text>
-          <Text className="text-muted text-xs">{isProfissional ? 'Profissional' : 'Paciente'}</Text>
+          <Text className="text-muted text-xs">Paciente</Text>
           {foto && (
             <TouchableOpacity onPress={removerFoto} className="mt-2">
               <Text className="text-red-500 text-xs font-medium">Remover foto</Text>
@@ -274,25 +265,21 @@ export function PerfilScreen() {
             />
           </View>
 
-          {/* Data de nascimento — apenas paciente */}
-          {!isProfissional && (
-            <View onLayout={registrar('dtNascimento')}>
-              <InputField
-                label="Data de nascimento"
-                placeholder="dd/mm/aaaa"
-                value={dtNascimento}
-                onChangeText={(t) => setDtNascimento(maskDataBr(t))}
-                keyboardType="numeric"
-                maxLength={10}
-                error={errors.dtNascimento}
-              />
-            </View>
-          )}
+          <View onLayout={registrar('dtNascimento')}>
+            <InputField
+              label="Data de nascimento"
+              placeholder="dd/mm/aaaa"
+              value={dtNascimento}
+              onChangeText={(t) => setDtNascimento(maskDataBr(t))}
+              keyboardType="numeric"
+              maxLength={10}
+              error={errors.dtNascimento}
+            />
+          </View>
 
           <SegmentedControl label="Sexo" options={SEXO_OPCOES} value={sexo} onChange={setSexo} />
 
-          {/* Gênero — apenas paciente */}
-          {!isProfissional && generos.length > 0 && (
+          {generos.length > 0 && (
             <SelectField
               label="Gênero"
               value={idGenero}
@@ -302,17 +289,13 @@ export function PerfilScreen() {
           )}
         </View>
 
-        {/* Endereço — apenas paciente */}
-        {!isProfissional && (
-          <>
-            <Text className="text-primary font-bold text-sm mb-3 mt-2">Endereço</Text>
-            <EnderecoFields
-              values={endereco}
-              onChange={setEndereco}
-              errors={{ cep: errors.cep, numero: errors.numero }}
-            />
-          </>
-        )}
+        {/* Endereço */}
+        <Text className="text-primary font-bold text-sm mb-3 mt-2">Endereço</Text>
+        <EnderecoFields
+          values={endereco}
+          onChange={setEndereco}
+          errors={{ cep: errors.cep, numero: errors.numero }}
+        />
       </ScrollView>
 
       {/* Botões fixos */}

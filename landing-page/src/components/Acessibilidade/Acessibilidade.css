@@ -27,6 +27,9 @@
 /* ilustração do recurso de leitura em voz alta */
 
 .ouvir-tela {
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
   margin-top: 36px;
   width: fit-content;
   display: flex;
@@ -72,6 +75,7 @@
   background: var(--Blue);
   opacity: 0.35;
   animation: onda 1.4s ease-in-out infinite;
+  animation-play-state: paused;
   animation-delay: calc(var(--i) * 0.08s);
 }
 
@@ -132,3 +136,7 @@
 
   .acessibilidade-intro { position: static; }
 }
+
+.ouvir-tela:hover { border-color: var(--Action); }
+.ouvir-tela:focus-visible { outline: 3px solid var(--Focus); outline-offset: 3px; }
+.ouvir-tela.is-lendo .ouvir-tela-onda i { animation-play-state: running; }

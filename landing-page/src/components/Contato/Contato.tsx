@@ -6,8 +6,11 @@ import "./Contato.css";
 function Contato() {
   const sectionRef = useReveal<HTMLElement>();
   const [status, setStatus] = useState("");
+  const [enviando, setEnviando] = useState(false);
 
-  const enviarDuvida = (event: FormEvent<HTMLFormElement>) => {
+  // O envio usa o FormSubmit (formsubmit.co): ele recebe os campos e repassa por e-mail
+  // para o endereço da equipe (VITE_CONTACT_EMAIL). Não precisa de servidor próprio.
+  const enviarDuvida = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!CONTACT_EMAIL) {
@@ -15,14 +18,42 @@ function Contato() {
       return;
     }
 
-    const dados = new FormData(event.currentTarget);
-    const assunto = encodeURIComponent(`Dúvida sobre o PASI: ${dados.get("assunto")}`);
-    const mensagem = encodeURIComponent(
-      `Nome: ${dados.get("nome")}\nE-mail para retorno: ${dados.get("email")}\n\n${dados.get("mensagem")}`
-    );
+    const form = event.currentTarget;
+    const dados = new FormData(form);
+    // campo escondido: pessoas não preenchem, robôs sim
+    if (dados.get("_honey")) return;
 
-    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${assunto}&body=${mensagem}`;
-    setStatus("Seu aplicativo de e-mail foi aberto. Revise a mensagem e envie por lá.");
+    setEnviando(true);
+    setStatus("Enviando sua mensagem...");
+
+    try {
+      const resposta = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(CONTACT_EMAIL)}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          _subject: "PASI: nova mensagem pelo formulário de contato",
+          _template: "table",
+          _captcha: "false",
+          Nome: dados.get("nome"),
+          "E-mail para retorno": dados.get("email"),
+          Assunto: (form.elements.namedItem("assunto") as HTMLSelectElement).selectedOptions[0].text,
+          Mensagem: dados.get("mensagem"),
+          email: dados.get("email"),
+        }),
+      });
+      const resultado = await resposta.json().catch(() => ({}));
+
+      if (!resposta.ok || resultado.success === "false" || resultado.success === false) {
+        throw new Error(resultado.message || "falha no envio");
+      }
+
+      form.reset();
+      setStatus("Mensagem enviada! A equipe do PASI vai responder no e-mail que você informou.");
+    } catch {
+      setStatus("Não foi possível enviar agora. Tente novamente em instantes.");
+    } finally {
+      setEnviando(false);
+    }
   };
 
   return (
@@ -43,6 +74,7 @@ function Contato() {
         </div>
 
         <form className="contato-formulario reveal" onSubmit={enviarDuvida}>
+          <input type="text" name="_honey" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ display: "none" }} />
           <div className="contato-formulario-intro">
             <span className="contato-formulario-icone" aria-hidden="true">
               <i className="fa-solid fa-envelope-open-text"></i>
@@ -83,11 +115,11 @@ function Contato() {
           <div className="contato-formulario-rodape">
             <p id="contato-status" role="status" aria-live="polite">
               {status || (CONTACT_EMAIL
-                ? "A mensagem será aberta no seu aplicativo de e-mail para você revisar."
+                ? "Sua mensagem chega direto para a equipe do PASI."
                 : "O envio será ativado quando a equipe configurar um endereço de contato.")}
             </p>
-            <button className="btn btn-primary" type="submit">
-              Preparar mensagem
+            <button className="btn btn-primary" type="submit" disabled={enviando}>
+              {enviando ? "Enviando..." : "Enviar mensagem"}
               <i className="fa-solid fa-arrow-right" aria-hidden="true"></i>
             </button>
           </div>

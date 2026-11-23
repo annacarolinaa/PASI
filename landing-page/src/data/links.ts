@@ -1,6 +1,5 @@
-// Link de download do aplicativo. Ainda não definido na documentação:
-// troque "#baixar" pelo link da loja quando o app for publicado.
-export const DOWNLOAD_URL = "#baixar";
+// Link de download do aplicativo: é o mesmo endereço do QR code do app (build no Expo).
+export const DOWNLOAD_URL = "https://expo.dev/accounts/pasitccs-team/projects/pasi/builds/75d3c757-d6f1-470a-a8d3-a6431fbe60e8";
 
 export const LOGO_SRC = `${import.meta.env.BASE_URL}logo.png`;
 export const LIGHT_LOGO_SRC = `${import.meta.env.BASE_URL}PASI%20LOGO%20CLARO.svg`;

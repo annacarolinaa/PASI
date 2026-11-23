@@ -210,13 +210,32 @@ export function ListaCriterios({ criterios, rotulo }: { criterios: [string, bool
   return (
     <ul className="req-list" aria-label={rotulo}>
       {criterios.map(([t, ok]) => (
-        <li key={t} className={ok ? 'ok' : ''}>
-          <Ic d={ok ? D.check : D.pendente} style={{ width: 16, height: 16 }} />
-          {t}
-          <span className="ps-sr">{ok ? ' (atendido)' : ' (pendente)'}</span>
-        </li>
+        <Criterio key={t} texto={t} ok={ok} />
       ))}
     </ul>
+  );
+}
+
+/** Um critério: anima quando passa a ser atendido (.ok) e quando deixa de ser (.perdeu). */
+function Criterio({ texto, ok }: { texto: string; ok: boolean }) {
+  // guarda o valor anterior para saber se o critério acabou de deixar de ser atendido
+  const [anterior, setAnterior] = useState(ok);
+  const [perdeu, setPerdeu] = useState(false);
+  if (anterior !== ok) {
+    setAnterior(ok);
+    setPerdeu(anterior && !ok);
+  }
+  return (
+    <li
+      className={ok ? 'ok' : perdeu ? 'perdeu' : ''}
+      onAnimationEnd={(e) => {
+        if (e.target === e.currentTarget && e.animationName === 'crit-perde') setPerdeu(false);
+      }}
+    >
+      <Ic d={ok ? D.check : D.pendente} style={{ width: 16, height: 16 }} />
+      {texto}
+      <span className="ps-sr">{ok ? ' (atendido)' : ' (pendente)'}</span>
+    </li>
   );
 }
 

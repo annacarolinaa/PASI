@@ -1,4 +1,4 @@
-import { useRef, useState, type DragEvent } from 'react';
+import { useRef, useState, type DragEvent, type KeyboardEvent } from 'react';
 import * as docApi from '../api/documentos';
 import type { Documento } from '../api/documentos';
 import { mensagemErro } from '../api/client';
@@ -13,6 +13,22 @@ const ENVIAR = 'M12 16V4M7 9l5-5 5 5M4 20h16';
 /** Um arquivo (.ps-file) com baixar e, opcionalmente, excluir. */
 export function ArquivoDoc({ doc, aoExcluir }: { doc: Documento; aoExcluir?: () => void }) {
   const [erro, setErro] = useState<string | null>(null);
+  const [baixando, setBaixando] = useState(false);
+
+  async function baixar() {
+    if (baixando) return;
+    setBaixando(true);
+    setErro(null);
+    try {
+      await docApi.baixar(doc);
+    } catch (e) {
+      setErro(mensagemErro(e));
+    } finally {
+      setBaixando(false);
+    }
+  }
+
+  const rotulo = baixando ? 'Baixando arquivo…' : 'Baixar arquivo';
   return (
     <>
       <div className="ps-file">
@@ -26,11 +42,12 @@ export function ArquivoDoc({ doc, aoExcluir }: { doc: Documento; aoExcluir?: () 
         <button
           type="button"
           className="act tt"
-          aria-label="Baixar arquivo"
-          data-tip="Baixar arquivo"
-          onClick={() => docApi.baixar(doc).catch((e) => setErro(mensagemErro(e)))}
+          aria-label={rotulo}
+          data-tip={rotulo}
+          aria-busy={baixando}
+          onClick={() => void baixar()}
         >
-          <Ic d={BAIXAR} />
+          {baixando ? <span className="giro lg" aria-hidden="true" /> : <Ic d={BAIXAR} />}
         </button>
         {aoExcluir && (
           <button type="button" className="act tt danger" aria-label="Excluir arquivo" data-tip="Excluir arquivo" onClick={aoExcluir}>
@@ -43,19 +60,37 @@ export function ArquivoDoc({ doc, aoExcluir }: { doc: Documento; aoExcluir?: () 
   );
 }
 
-/** Área para soltar ou escolher um arquivo (.ps-drop). */
+/**
+ * Área para soltar ou escolher um arquivo (.ps-drop). A área inteira é um botão:
+ * clicar (ou Enter/Espaço) abre a seleção de arquivos.
+ */
 export function SoltarArquivo({ aoEscolher, enviando }: { aoEscolher: (f: File) => void; enviando?: boolean }) {
   const input = useRef<HTMLInputElement>(null);
   const [sobre, setSobre] = useState(false);
+  const abrir = () => {
+    if (!enviando) input.current?.click();
+  };
   const soltar = (e: DragEvent) => {
     e.preventDefault();
     setSobre(false);
     const f = e.dataTransfer.files?.[0];
-    if (f) aoEscolher(f);
+    if (f && !enviando) aoEscolher(f);
+  };
+  const tecla = (e: KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      abrir();
+    }
   };
   return (
     <div
-      className={'ps-drop' + (sobre ? ' is-over' : '')}
+      className={'ps-drop' + (sobre ? ' is-drag' : '') + (enviando ? ' is-busy' : '')}
+      role="button"
+      tabIndex={0}
+      aria-label="Enviar documento: arraste um arquivo até aqui ou pressione Enter para escolher. Até 10 MB."
+      aria-busy={enviando || undefined}
+      onClick={abrir}
+      onKeyDown={tecla}
       onDragOver={(e) => {
         e.preventDefault();
         setSobre(true);
@@ -63,18 +98,21 @@ export function SoltarArquivo({ aoEscolher, enviando }: { aoEscolher: (f: File) 
       onDragLeave={() => setSobre(false)}
       onDrop={soltar}
     >
-      <span className="ico">
-        <Ic d={ENVIAR} lg />
+      <span className="ico" aria-hidden="true">
+        {enviando ? <span className="giro lg" /> : <Ic d={ENVIAR} lg />}
       </span>
-      <strong>{enviando ? 'Enviando…' : 'Arraste um arquivo ou escolha'}</strong>
-      <span>Até 10 MB por arquivo.</span>
-      <button type="button" className="ps-btn secondary sm" onClick={() => input.current?.click()} disabled={enviando}>
+      <strong aria-hidden="true">{enviando ? 'Enviando…' : 'Arraste um arquivo ou escolha'}</strong>
+      <span aria-hidden="true">Até 10 MB por arquivo.</span>
+      {/* só visual: quem abre a seleção é a área inteira */}
+      <span className="ps-btn secondary sm btn-falso" aria-hidden="true">
         Escolher arquivo
-      </button>
+      </span>
       <input
         ref={input}
         type="file"
         hidden
+        // o clique programático no input sobe até a área; sem isso ela tentaria abrir de novo
+        onClick={(e) => e.stopPropagation()}
         onChange={(e) => {
           const f = e.target.files?.[0];
           if (f) aoEscolher(f);

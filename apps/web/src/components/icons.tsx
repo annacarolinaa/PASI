@@ -87,6 +87,13 @@ export const IcSucesso = (p: P) => (
     <path d="m8 12 3 3 5-6" />
   </Ic>
 );
+/** Lápis "editar" centrado na caixa (o D.lapisLinha pesa para baixo e parece torto ao lado do texto). */
+export const IcEditar = (p: P) => (
+  <Ic {...p}>
+    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4z" />
+    <path d="M14.5 5.5l3 3" />
+  </Ic>
+);
 export const IcEmail = (p: P) => (
   <Ic {...p}>
     <rect x="3" y="5" width="18" height="14" rx="2" />

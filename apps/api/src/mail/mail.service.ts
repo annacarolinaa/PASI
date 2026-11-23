@@ -51,6 +51,8 @@ export class MailService {
           htmlContent: email.html,
           textContent: email.texto,
         }),
+        // sem limite, um Brevo lento segurava a resposta do cadastro até o painel desistir
+        signal: AbortSignal.timeout(10_000),
       });
       if (!resp.ok) {
         const corpo = await resp.text().catch(() => '');

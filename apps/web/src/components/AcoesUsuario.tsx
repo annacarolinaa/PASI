@@ -3,7 +3,8 @@ import * as gestao from '../api/gestao';
 import { mensagemErro } from '../api/client';
 import { TipoUsuario } from '../api/types';
 import { Modal } from './Modal';
-import { D, Ic } from './icons';
+import type { ReactNode } from 'react';
+import { D, Ic, IcEditar, IcEmail } from './icons';
 import { dataHora } from '../lib/format';
 import { MensagemErro } from './Form';
 
@@ -16,12 +17,12 @@ interface Alvo {
   id_tipo_usuario: number;
 }
 
-const ICONES: Record<AcaoUsuario, { cls: string; d: string }> = {
-  reenviar: { cls: 'ico', d: 'M3 6h18v12H3zM3 7l9 6 9-6' },
-  email: { cls: 'ico', d: 'M3 6h18v12H3zM3 7l9 6 9-6' },
-  promover: { cls: 'ico warning', d: 'M12 19V5M5 12l7-7 7 7' },
-  inativar: { cls: 'ico error', d: D.proibido },
-  reativar: { cls: 'ico', d: D.check },
+const ICONES: Record<AcaoUsuario, { cls: string; ic: ReactNode }> = {
+  reenviar: { cls: 'ico', ic: <IcEmail lg /> },
+  email: { cls: 'ico', ic: <IcEditar lg /> },
+  promover: { cls: 'ico warning', ic: <Ic d="M12 19V5M5 12l7-7 7 7" lg /> },
+  inativar: { cls: 'ico error', ic: <Ic d={D.proibido} lg /> },
+  reativar: { cls: 'ico ok', ic: <Ic d={D.check} lg /> },
 };
 
 /**
@@ -127,9 +128,7 @@ export function ModalAcaoUsuario({
     <Modal
       alerta
       icone={
-        <div className={ICONES[acao].cls}>
-          <Ic d={ICONES[acao].d} lg />
-        </div>
+        <div className={ICONES[acao].cls}>{ICONES[acao].ic}</div>
       }
       titulo={m.t}
       aoFechar={ocupado ? undefined : aoFechar}

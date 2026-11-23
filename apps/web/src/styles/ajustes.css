@@ -1,0 +1,390 @@
+/* PASI — Painel do Profissional · ajustes dos testes de usabilidade (nov/2026)
+   Carregado depois de app.css e dark.css (e antes de acessibilidade.css, para os
+   modos de acessibilidade continuarem valendo por cima). Regras do tema escuro
+   ficam no fim, com html[data-theme="dark"]. */
+
+/* ---------- Loading skeleton (components/Esqueleto.tsx) ---------- */
+.esq-tela { display: contents; }
+.esq-linha { display: flex; flex-wrap: wrap; align-items: center; }
+.ps .tbl tbody tr.esq-linha-tbl:hover td { background: transparent; }
+
+/* ---------- Pesquisa: barra de "buscando" no topo do grid e ícone girando ---------- */
+.busca-barra { position: relative; z-index: 1; height: 3px; margin-top: -3px; overflow: hidden; pointer-events: none; opacity: 0; transition: opacity .2s ease; }
+.busca-barra.is-on { opacity: 1; }
+.busca-barra::before { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 38%; border-radius: 3px; background: linear-gradient(90deg, transparent 0%, var(--Action) 50%, transparent 100%); animation: barra-vai 1.1s ease-in-out infinite; }
+@keyframes barra-vai { from { transform: translateX(-100%); } to { transform: translateX(280%); } }
+.giro { display: inline-block; width: 16px; height: 16px; flex-shrink: 0; box-sizing: border-box; border-radius: 50%; border: 2px solid color-mix(in srgb, currentColor 22%, transparent); border-top-color: currentColor; animation: giro .7s linear infinite; }
+.giro.lg { width: 20px; height: 20px; border-width: 2.25px; }
+@keyframes giro { to { transform: rotate(360deg); } }
+
+/* ---------- Botões ocupados ("Aguarde…", "Salvando…"): barra de carregamento dentro do botão ----------
+   O texto mantém a cor normal do botão (sem transparência), então continua legível. */
+.ps .ps-btn[aria-busy="true"] { position: relative; overflow: hidden; isolation: isolate; cursor: progress; opacity: 1; }
+.ps .ps-btn[aria-busy="true"]::before { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: color-mix(in srgb, currentColor 22%, transparent); }
+.ps .ps-btn[aria-busy="true"]::after { content: ""; position: absolute; left: 0; bottom: 0; width: 40%; height: 3px; border-radius: 3px; background: currentColor; animation: btn-carga 1.1s cubic-bezier(.4, 0, .2, 1) infinite; }
+@keyframes btn-carga { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+/* botão só de ícone (ex.: baixar documento): o giro aparece no lugar do ícone */
+.ps .act[aria-busy="true"], .ps .act[aria-busy="true"]:hover { cursor: progress; transform: none; }
+
+/* ---------- Ícones das janelas: preenchidos, com anel, em destaque no claro e no escuro ---------- */
+.ps .ps-scrim .ps-modal > .ico { width: 56px; height: 56px; --ico-bg: var(--Action); --ico-fg: #fff; --ico-anel: color-mix(in srgb, var(--Action) 14%, transparent); background: var(--ico-bg); color: var(--ico-fg); box-shadow: 0 0 0 7px var(--ico-anel), 0 8px 18px color-mix(in srgb, var(--ico-bg) 32%, transparent); animation: ico-entra .5s cubic-bezier(.3, 1.5, .5, 1) .12s both; }
+.ps .ps-scrim .ps-modal > .ico.ok { --ico-bg: #256b42; --ico-anel: color-mix(in srgb, #256b42 14%, transparent); }
+.ps .ps-scrim .ps-modal > .ico.warning { --ico-bg: #f6c84c; --ico-fg: #4a3200; --ico-anel: color-mix(in srgb, #f6c84c 26%, transparent); }
+.ps .ps-scrim .ps-modal > .ico.error { --ico-bg: #c42b33; --ico-fg: #fff; --ico-anel: color-mix(in srgb, #c42b33 14%, transparent); }
+.ps .ps-scrim .ps-modal > .ico svg.ic { width: 26px; height: 26px; stroke-width: 2.4; }
+@keyframes ico-entra { from { transform: scale(.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+/* centralizado, com respiro até o título (o anel de 7px já ocupa parte do espaço) */
+.ps .ps-scrim .ps-modal > .ico { margin: 30px auto 0; }
+.ps .ps-scrim .ps-modal > .ico + header { padding-top: 28px; }
+
+/* Botão de ação na cor do ícone da janela (o Cancelar continua com a cor dele) */
+.ps .ps-scrim .ps-modal:has(> .ico.warning) > footer .ps-btn:is(.primary, .danger) { background: #f6c84c; border-color: #f6c84c; color: #4a3200; }
+.ps .ps-scrim .ps-modal:has(> .ico.warning) > footer .ps-btn:is(.primary, .danger):is(:hover, :focus-visible) { background: #e9b730; border-color: #e9b730; color: #3a2700; }
+.ps .ps-scrim .ps-modal:has(> .ico.error) > footer .ps-btn:is(.primary, .danger) { background: #c42b33; border-color: #c42b33; color: #fff; }
+.ps .ps-scrim .ps-modal:has(> .ico.error) > footer .ps-btn:is(.primary, .danger):is(:hover, :focus-visible) { background: #a8222a; border-color: #a8222a; color: #fff; }
+.ps .ps-scrim .ps-modal:has(> .ico.ok) > footer .ps-btn:is(.primary, .danger) { background: #256b42; border-color: #256b42; color: #fff; }
+.ps .ps-scrim .ps-modal:has(> .ico.ok) > footer .ps-btn:is(.primary, .danger):is(:hover, :focus-visible) { background: #1d5534; border-color: #1d5534; color: #fff; }
+
+/* ---------- Janela de vidro fosco (incluir/editar pergunta): a lista aparece atrás ---------- */
+/* O desfoque do vidro só alcança a página se nenhum ancestral da janela tiver opacity/filter/backdrop-filter
+   ativos (eles viram a "raiz" do desfoque). Por isso o fundo escuro aqui não usa filtro e entra animando a
+   cor em vez da opacidade, e a janela entra só com movimento. */
+.ps .ps-scrim.vidro { background: rgba(16, 39, 70, .2); -webkit-backdrop-filter: none; backdrop-filter: none; animation: vidro-fundo .24s ease-out both; }
+.ps .ps-scrim.vidro .ps-modal { background: color-mix(in srgb, var(--White) 52%, transparent); -webkit-backdrop-filter: blur(26px) saturate(170%); backdrop-filter: blur(26px) saturate(170%); border: 1px solid rgba(255, 255, 255, .55); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .6), 0 24px 60px rgba(10, 31, 51, .22); animation: vidro-sobe .42s cubic-bezier(.16, 1, .3, 1) both; }
+@keyframes vidro-fundo { from { background-color: transparent; } }
+@keyframes vidro-sobe { from { transform: translateY(56px) scale(.97); } to { transform: none; } }
+.ps .ps-scrim.vidro .ps-modal footer { background: color-mix(in srgb, var(--Background) 35%, transparent); }
+.ps .ps-scrim.vidro .ps-modal .ps-choice, .ps .ps-scrim.vidro .ps-modal .ps-control { background: color-mix(in srgb, var(--White) 82%, transparent); }
+.ps .ps-scrim.vidro .ps-modal .ps-choice.is-checked { background: color-mix(in srgb, var(--Selected-bg) 92%, transparent); }
+/* janela alta: o corpo rola e o rodapé fica sempre visível */
+.ps .ps-modal.alta { display: flex; flex-direction: column; max-height: calc(100vh - 48px); }
+.ps .ps-modal.alta > .body { overflow-y: auto; min-height: 0; color: var(--Ink); }
+.ps .ps-modal.alta > footer { flex-wrap: wrap; }
+
+/* ---------- Pergunta entrando na lista (ou alterada), visível atrás do vidro ---------- */
+.ps .item.pergunta-nova { animation: pergunta-entra .75s cubic-bezier(.2, .9, .25, 1) both; }
+.ps .item.pergunta-alterada { animation: pergunta-pisca 1.1s ease-out; }
+.ps .panel.painel-entra { animation: painel-entra .5s cubic-bezier(.2, .9, .25, 1) both; }
+@keyframes pergunta-entra {
+  0% { opacity: 0; transform: translateY(-16px) scale(.96); }
+  55% { opacity: 1; transform: none; box-shadow: 0 0 0 4px color-mix(in srgb, var(--Action) 30%, transparent); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+@keyframes pergunta-pisca { 35% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--Action) 32%, transparent); background: var(--Softblue-2); } }
+@keyframes painel-entra { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+.add-perguntas { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+
+/* ---------- Área de soltar arquivo: toda clicável e com fundo mais evidente ---------- */
+.ps .ps-drop { cursor: pointer; background: color-mix(in srgb, var(--Softblue) 75%, var(--White)); border-color: color-mix(in srgb, var(--Link) 45%, white); transition: background-color .2s ease, border-color .2s ease, box-shadow .2s ease; }
+.ps .ps-drop:hover, .ps .ps-drop:focus-visible { background: var(--Softblue); border-color: var(--Link); outline: none; }
+.ps .ps-drop:focus-visible { box-shadow: 0 0 0 3px color-mix(in srgb, var(--Focus) 35%, transparent); }
+.ps .ps-drop .ico { background: var(--White); box-shadow: 0 2px 8px rgba(16, 39, 70, .12); }
+.ps .ps-drop .btn-falso { pointer-events: none; }
+.ps .ps-drop.is-busy { cursor: progress; }
+
+/* ---------- Critérios da senha: o item atendido "comemora" ---------- */
+.req-list li { transition: color .3s ease; }
+.req-list li.ok { animation: crit-pulo .45s ease-out; }
+.req-list li.ok svg.ic { animation: crit-ok .55s cubic-bezier(.3, 1.6, .5, 1); }
+.req-list li.ok svg.ic path { stroke-dasharray: 24; animation: crit-traco .4s ease-out .08s both; }
+@keyframes crit-ok { 0% { transform: scale(.4) rotate(-35deg); } 60% { transform: scale(1.3) rotate(6deg); } 100% { transform: none; } }
+@keyframes crit-traco { from { stroke-dashoffset: 24; } to { stroke-dashoffset: 0; } }
+@keyframes crit-pulo { 0% { transform: none; } 35% { transform: translateX(4px); } 100% { transform: none; } }
+/* deixou de ser atendido (ex.: o usuário apagou parte da senha): balança e pisca em vermelho */
+.req-list li.perdeu { animation: crit-perde .55s ease-out; }
+.req-list li.perdeu svg.ic { animation: crit-volta .5s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes crit-perde {
+  0% { transform: none; color: var(--Error); }
+  18% { transform: translateX(-5px); }
+  36% { transform: translateX(4px); }
+  54% { transform: translateX(-3px); color: var(--Error); }
+  72% { transform: translateX(2px); }
+  100% { transform: none; color: var(--Text-muted); }
+}
+@keyframes crit-volta { 0% { transform: scale(1.5); opacity: .4; } 60% { transform: scale(.85); opacity: 1; } 100% { transform: none; } }
+
+/* ---------- Avisos do detalhe do usuário: sobem de trás de "Dados do usuário" ---------- */
+.pg-usuario .split { position: relative; z-index: 1; }
+.ps .alerta-sobe { position: relative; z-index: 0; animation: alerta-sobe .65s cubic-bezier(.2, .9, .25, 1) .15s both; }
+.ps .alerta-sobe + .alerta-sobe { animation-delay: .3s; }
+@keyframes alerta-sobe { from { transform: translateY(calc(100% + 24px)); opacity: 0; } 35% { opacity: 1; } to { transform: none; opacity: 1; } }
+
+/* ---------- "Resumo" das telas de inclusão/edição: sempre abaixo da barra superior ----------
+   --altura-barra é medida em useCabecalhoCompacto.ts (altura da barra de vidro). */
+.ps .resumo-fixo { position: sticky; top: calc(var(--altura-barra, 64px) + 16px); align-self: start; }
+@media (max-width: 900px) { .ps .resumo-fixo { position: static; } }
+
+/* ---------- Selos (tipo de pergunta, obrigatória) ---------- */
+.selos-linha, .ps .item .meta span.selos-linha:not(.ps-badge):not(.ps-box) { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .busca-barra::before, .giro, .ps .ps-btn[aria-busy="true"]::after, .ps .ps-scrim .ps-modal > .ico, .ps .item.pergunta-nova, .ps .item.pergunta-alterada,
+  .ps .panel.painel-entra, .req-list li.ok, .req-list li.ok svg.ic, .req-list li.ok svg.ic path, .req-list li.perdeu, .req-list li.perdeu svg.ic, .ps .alerta-sobe { animation: none; }
+}
+html.a11y-movimento .busca-barra::before, html.a11y-movimento .giro, html.a11y-movimento .ps .ps-btn[aria-busy="true"]::after,
+html.a11y-movimento .ps .ps-scrim .ps-modal > .ico, html.a11y-movimento .ps .item.pergunta-nova, html.a11y-movimento .ps .item.pergunta-alterada,
+html.a11y-movimento .ps .panel.painel-entra, html.a11y-movimento .req-list li.ok, html.a11y-movimento .req-list li.ok svg.ic,
+html.a11y-movimento .req-list li.ok svg.ic path, html.a11y-movimento .req-list li.perdeu, html.a11y-movimento .req-list li.perdeu svg.ic, html.a11y-movimento .ps .alerta-sobe { animation: none; }
+
+/* =====================================================================
+   Tema escuro
+   ===================================================================== */
+
+/* Opções das listas suspensas nativas: fundo escuro e texto claro (antes saíam claras sobre claro) */
+html[data-theme="dark"] select option, html[data-theme="dark"] select optgroup { background-color: var(--Surface-3); color: var(--Ink); }
+html[data-theme="dark"] select option:checked { background-color: var(--Softblue-label); color: #fff; }
+html[data-theme="dark"] select option:disabled { color: var(--Disabled-text); }
+html[data-theme="dark"] .ms-trigger .val { color: var(--Ink); }
+html[data-theme="dark"] .ms-trigger .val.ph { color: var(--Text-muted); }
+html[data-theme="dark"] .ps .ms-menu .ms-opt { color: var(--Ink); }
+
+/* Cancelar das janelas: fundo vermelho no escuro */
+html[data-theme="dark"] .ps .ps-modal footer .ps-btn.cancelar { background: #c42b33; border-color: #c42b33; color: #fff; }
+html[data-theme="dark"] .ps .ps-modal footer .ps-btn.cancelar:hover, html[data-theme="dark"] .ps .ps-modal footer .ps-btn.cancelar:focus-visible { background: #a8222a; border-color: #a8222a; color: #fff; }
+html[data-theme="dark"] .ps .ps-modal footer .ps-btn.cancelar[disabled] { background: #6a2328; border-color: #6a2328; color: rgba(255, 255, 255, .72); }
+/* ...mas, quando a ação também é vermelha (ícone de erro, ou ação de perigo sem ícone), o Cancelar fica neutro */
+html[data-theme="dark"] .ps .ps-scrim .ps-modal:has(> .ico.error) > footer .ps-btn.cancelar,
+html[data-theme="dark"] .ps .ps-scrim .ps-modal:not(:has(> .ico)):has(> footer .ps-btn.danger) > footer .ps-btn.cancelar { background: transparent; border-color: rgba(255, 255, 255, .28); color: var(--Ink); }
+html[data-theme="dark"] .ps .ps-scrim .ps-modal:has(> .ico.error) > footer .ps-btn.cancelar:is(:hover, :focus-visible),
+html[data-theme="dark"] .ps .ps-scrim .ps-modal:not(:has(> .ico)):has(> footer .ps-btn.danger) > footer .ps-btn.cancelar:is(:hover, :focus-visible) { background: rgba(255, 255, 255, .07); border-color: rgba(255, 255, 255, .45); color: var(--Ink); }
+html[data-theme="dark"] .ps .ps-scrim .ps-modal:has(> .ico.error) > footer .ps-btn.cancelar[disabled],
+html[data-theme="dark"] .ps .ps-scrim .ps-modal:not(:has(> .ico)):has(> footer .ps-btn.danger) > footer .ps-btn.cancelar[disabled] { background: transparent; border-color: rgba(255, 255, 255, .14); color: var(--Disabled-text); }
+
+/* Ícones das janelas: anel mais forte sobre o fundo escuro */
+html[data-theme="dark"] .ps .ps-scrim .ps-modal > .ico { --ico-anel: color-mix(in srgb, var(--ico-bg) 24%, transparent); box-shadow: 0 0 0 7px var(--ico-anel), 0 8px 20px rgba(0, 0, 0, .45); }
+html[data-theme="dark"] .ps .ps-scrim .ps-modal > .ico.ok { --ico-bg: #2f8a55; }
+
+/* Vidro fosco */
+html[data-theme="dark"] .ps .ps-scrim.vidro { background: rgba(2, 8, 18, .35); }
+html[data-theme="dark"] .ps .ps-scrim.vidro .ps-modal { background: color-mix(in srgb, var(--Surface-3) 55%, transparent); border-color: rgba(255, 255, 255, .14); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 24px 60px rgba(0, 0, 0, .5); }
+html[data-theme="dark"] .ps .ps-scrim.vidro .ps-modal footer { background: color-mix(in srgb, var(--Surface-2) 38%, transparent); }
+html[data-theme="dark"] .ps .ps-scrim.vidro .ps-modal .ps-choice, html[data-theme="dark"] .ps .ps-scrim.vidro .ps-modal .ps-control { background: color-mix(in srgb, var(--Surface-2) 80%, transparent); }
+html[data-theme="dark"] .ps .ps-scrim.vidro .ps-modal .ps-choice.is-checked { background: color-mix(in srgb, var(--Selected-bg) 90%, transparent); }
+
+/* Área de soltar arquivo */
+html[data-theme="dark"] .ps .ps-drop { background: #152a4d; border-color: color-mix(in srgb, var(--Link) 45%, var(--Surface)); }
+html[data-theme="dark"] .ps .ps-drop:hover, html[data-theme="dark"] .ps .ps-drop:focus-visible { background: #1a3461; border-color: var(--Link); }
+html[data-theme="dark"] .ps .ps-drop .ico { background: var(--Surface-3); box-shadow: 0 2px 8px rgba(0, 0, 0, .35); }
+
+/* Detalhe do usuário: ícones dos botões de ação alinhados ao texto */
+.ps .acoes-usuario .ps-btn.block { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.ps .acoes-usuario .ps-btn.block svg.ic { flex-shrink: 0; width: 18px; height: 18px; margin: 0; vertical-align: middle; }
+
+/* ---------- Esconder o menu lateral (components/Layout.tsx) ---------- */
+.app > .side-slot { transition: flex-basis .35s cubic-bezier(.4, 0, .2, 1), margin-left .35s cubic-bezier(.4, 0, .2, 1); }
+.app.menu-oculto > .side-slot { margin-left: -264px; visibility: hidden; transition: margin-left .35s cubic-bezier(.4, 0, .2, 1), visibility 0s .35s; }
+.side { position: relative; overflow-x: hidden; }
+.menu-fechar { margin-left: auto; width: 30px; height: 30px; flex-shrink: 0; border: 0; border-radius: 50%; background: transparent; color: var(--Text-muted); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background .2s ease, color .2s ease; }
+.menu-fechar:hover, .menu-fechar:focus-visible { background: var(--Softblue); color: var(--Link); }
+.menu-alterna { position: fixed; left: 16px; bottom: 24px; z-index: 300; width: 52px; height: 52px; padding: 0; border-radius: 50%; border: 0; background: var(--Action); color: #fff; font: 700 14px/1 var(--font-sans); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 0 0 4px color-mix(in srgb, var(--Action) 22%, transparent), 0 10px 24px rgba(10, 31, 51, .35); animation: menu-botao .3s ease .2s both; transition: background .2s ease, transform .2s ease; }
+.menu-alterna:hover, .menu-alterna:focus-visible { background: var(--Action-hover); transform: translateY(-2px); }
+.menu-alterna svg.ic { width: 24px; height: 24px; stroke-width: 2.4; }
+@keyframes menu-botao { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .app > .side-slot, .menu-alterna { transition: none; } }
+html.a11y-movimento .app > .side-slot, html.a11y-movimento .menu-alterna { transition: none; }
+
+/* "Profissional" saiu do logo e fica acima do cartão do usuário */
+.side .user-bloco { display: flex; flex-direction: column; margin-top: -8px; }
+.side .user-bloco .user { margin-top: 0; }
+
+/* Esconder o menu: o conteúdo desliza e some, e o X gira */
+.side { transition: opacity .28s ease, transform .35s cubic-bezier(.4, 0, .2, 1); }
+.app.menu-oculto .side { opacity: 0; transform: translateX(-32px); }
+.menu-fechar svg.ic { transition: transform .35s cubic-bezier(.3, 1.4, .5, 1); }
+.menu-fechar:hover svg.ic { transform: rotate(90deg); }
+.app.menu-oculto .menu-fechar svg.ic { transform: rotate(180deg) scale(.6); }
+@media (prefers-reduced-motion: reduce) { .side, .menu-fechar svg.ic { transition: none; } }
+html.a11y-movimento .side, html.a11y-movimento .menu-fechar svg.ic { transition: none; }
+@media (prefers-reduced-motion: reduce) { .ps .ps-scrim.vidro, .ps .ps-scrim.vidro .ps-modal { animation: none; } }
+html.a11y-movimento .ps .ps-scrim.vidro, html.a11y-movimento .ps .ps-scrim.vidro .ps-modal { animation: none; }
+
+/* Saída do vidro (a cópia criada por behaviors/modal.js mantém .vidro): precisa vencer as animações de
+   entrada acima, senão a janela "entra" de novo antes de sumir. O fundo clareia pela cor (sem opacity no
+   pai, para o desfoque continuar valendo) e a janela desce e esmaece. */
+.ps .ps-scrim.vidro.is-saindo { pointer-events: none; animation: vidro-fundo-sai .28s ease-in both; }
+.ps .ps-scrim.vidro.is-saindo .ps-modal { animation: vidro-desce .28s cubic-bezier(.7, 0, .84, 0) both; }
+.ps .ps-scrim.vidro.is-saindo.so-janela { background: transparent; animation: none; }
+@keyframes vidro-fundo-sai { to { background-color: transparent; } }
+@keyframes vidro-desce { to { transform: translateY(56px) scale(.97); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .ps .ps-scrim.vidro.is-saindo, .ps .ps-scrim.vidro.is-saindo .ps-modal { animation: none; } }
+html.a11y-movimento .ps .ps-scrim.vidro.is-saindo, html.a11y-movimento .ps .ps-scrim.vidro.is-saindo .ps-modal { animation: none; }
+
+/* Erro de validação da janela de pergunta: fica no rodapé, sempre à vista (o corpo é que rola) */
+.ps .ps-modal.alta > footer .erro-rodape { flex: 1 1 100%; text-align: left; }
+.ps .ps-modal.alta > footer .erro-rodape > * { margin: 0; }
+
+
+/* =====================================================================
+   Responsividade (celular e tablet)
+   Faixas: até 1100px o menu vira gaveta (tablet deitado/em pé e celular);
+   até 760px as tabelas viram cartões; até 560px, ajustes finos de celular.
+   ===================================================================== */
+
+/* ---------- Menu em gaveta (components/Layout.tsx) ---------- */
+.menu-movel, .gaveta-fundo { display: none; }
+@media (max-width: 1100px) {
+  .ps.app.em-gaveta > .side-slot {
+    position: fixed; top: 0; left: 0; bottom: 0; z-index: 520; width: min(300px, 86vw); height: auto; align-self: stretch; flex: none; margin-left: 0;
+    visibility: hidden; transform: translateX(-100%); transition: transform .32s cubic-bezier(.4, 0, .2, 1), visibility 0s .32s;
+  }
+  .ps.app.em-gaveta.gaveta-aberta > .side-slot { visibility: visible; transform: none; box-shadow: 0 0 48px rgba(10, 31, 51, .32); transition: transform .34s cubic-bezier(.2, .9, .25, 1), visibility 0s; }
+  .ps.app.em-gaveta .side { width: 100%; height: auto; align-self: stretch; min-height: 0; opacity: 1; transform: none; overflow-y: auto; overscroll-behavior: contain; }
+  .ps.app.em-gaveta > .main { flex: 1 1 100%; }
+  .gaveta-fundo { display: block; position: fixed; inset: 0; z-index: 510; background: rgba(16, 39, 70, .45); opacity: 0; visibility: hidden; transition: opacity .3s ease, visibility 0s .3s; }
+  .gaveta-aberta > .gaveta-fundo { opacity: 1; visibility: visible; transition: opacity .3s ease, visibility 0s; }
+  .menu-alterna { display: none; }
+  .ps .menu-movel {
+    display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin-left: -10px; flex-shrink: 0;
+    border: 0; border-radius: 12px; background: transparent; color: var(--Navy); cursor: pointer;
+  }
+  .ps .menu-movel:hover, .ps .menu-movel:focus-visible { background: var(--Softblue); color: var(--Link); }
+  .ps .page-head.is-compact .menu-movel { width: 36px; height: 36px; }
+  /* o X do topo fecha a gaveta: alvo de toque maior */
+  .ps.app.em-gaveta .menu-fechar { width: 40px; height: 40px; }
+}
+html[data-theme="dark"] .ps .menu-movel { color: var(--Ink); }
+@media (prefers-reduced-motion: reduce) { .ps.app.em-gaveta > .side-slot, .gaveta-fundo { transition: none !important; } }
+html.a11y-movimento .ps.app.em-gaveta > .side-slot, html.a11y-movimento .gaveta-fundo { transition: none !important; }
+
+/* ---------- Tabelas: rolam dentro do próprio quadro (nunca a página toda) ---------- */
+.ps .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* ---------- Tablet (até 1100px) ---------- */
+@media (max-width: 1100px) {
+  .ps .page-head { padding-top: 16px; }
+  .ps .page-head h1 { font-size: 24px; }
+}
+/* conteúdo + resumo lado a lado enquanto couber (tablet deitado, já sem o menu fixo); empilha abaixo de 900px */
+@media (min-width: 901px) and (max-width: 1000px) { .ps .split { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); } }
+@media (max-width: 900px) { .ps .split { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---------- Tabelas viram cartões (até 760px) ---------- */
+@media (max-width: 760px) {
+  .ps .table-wrap { overflow: visible; }
+  .ps table.tbl { display: block; min-width: 0; }
+  .ps .tbl thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .ps .tbl tbody { display: flex; flex-direction: column; gap: 12px; padding: 12px; }
+  .ps .tbl tbody tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; padding: 14px 16px; border: 1px solid var(--Border-card); border-radius: 14px; background: var(--White); }
+  .ps .tbl tbody tr:hover td { background: transparent; }
+  .ps .tbl td, .ps .tbl td:first-child, .ps .tbl td:last-child { display: block; padding: 0; border: 0; max-width: none !important; min-width: 0; }
+  .ps .tbl td[data-rotulo]::before { content: attr(data-rotulo); display: block; margin-bottom: 4px; font: 700 11px/1.2 var(--font-sans); letter-spacing: .5px; text-transform: uppercase; color: var(--Text-muted); }
+  .ps .tbl td.cel-titulo, .ps .tbl td.cel-larga, .ps .tbl td[colspan] { grid-column: 1 / -1; }
+  .ps .tbl td.cel-titulo { order: -1; }
+  .ps .tbl td.cel-titulo strong { font-size: 15px; }
+  .ps .tbl td.cel-acoes { grid-column: 1 / -1; padding-top: 10px; border-top: 1px solid var(--Border-card); }
+  .ps .tbl td.cel-acoes .row-actions { justify-content: flex-start; flex-wrap: wrap; gap: 8px; }
+  .ps .tbl .num { white-space: normal; }
+  /* linha de carregando/vazio/erro e esqueleto */
+  .ps .tbl tbody tr:has(> td[colspan]) { display: block; border: 0; padding: 0; background: transparent; }
+  .ps .tbl tbody tr.esq-linha-tbl { grid-template-columns: minmax(0, 1fr); }
+  html[data-theme="dark"] .ps .tbl tbody tr { background: var(--Surface-2); }
+}
+
+/* ---------- Celular (até 560px) ---------- */
+@media (max-width: 560px) {
+  .ps .page-head, .ps .page-body { padding-left: 16px; padding-right: 16px; }
+  .ps .page-body { gap: 16px; padding-bottom: 96px; } /* espaço para o botão de acessibilidade não cobrir o fim */
+  .ps .page-head { gap: 12px; }
+  .ps .page-head h1 { font-size: 22px; overflow-wrap: anywhere; }
+  .ps .page-head .crumbs { margin-bottom: 10px; }
+  .ps .page-head > .actions { width: 100%; }
+  .ps .page-head > .actions > .ps-btn { flex: 1 1 auto; }
+  .ps .page-head.is-compact > .actions { width: auto; }
+  /* barra compacta: só o título (as migalhas não cabem) */
+  .ps .page-head.is-compact .crumbs { display: none; }
+  .ps .page-head.is-compact { padding-left: 16px; padding-right: 16px; }
+  .ps .panel > header, .ps .panel > .pb, .ps .panel > footer, .ps .toolbar { padding-left: 14px; padding-right: 14px; }
+  .ps .panel > header h2 { font-size: 16px; }
+  .ps .cols-2, .ps .cols-3 { grid-template-columns: minmax(0, 1fr); }
+  .ps .kv { grid-template-columns: minmax(0, 1fr) !important; }
+  .ps .item { gap: 12px; padding: 14px; }
+  .ps .item .meta { flex-basis: 180px; }
+  .ps .req-list { grid-template-columns: minmax(0, 1fr); }
+  /* busca e botão de filtros na mesma linha */
+  .ps .toolbar { flex-wrap: nowrap; }
+  .ps .toolbar .ps-search { flex: 1 1 0; min-width: 0; }
+  .ps .toolbar .ps-search input { font-size: 16px; } /* 16px evita o zoom automático do iPhone ao focar */
+  .ps .filter-panel .fg { flex-basis: 100%; }
+  .ps .filter-panel .apply { width: 100%; margin-left: 0; }
+  .ps .filter-panel .apply .ps-btn { flex: 1 1 0; }
+  /* paginação: só setas e números, centralizada abaixo do "Mostrando" */
+  .ps .panel > footer:has(.ps-pagination) { flex-direction: column; align-items: stretch; gap: 10px; }
+  .ps .ps-results-meta { text-align: center; }
+  .ps .ps-pagination { justify-content: center; flex-wrap: wrap; gap: 4px; }
+  .ps .ps-pagination .pg-rot { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .ps .ps-pagination .ps-page.nav { padding: 0; min-width: var(--size-touch-min); }
+  /* botões de rodapé de painel ocupam a largura toda, um embaixo do outro */
+  .ps .panel > footer:not(:has(.ps-pagination)) { flex-direction: column-reverse; align-items: stretch; }
+  .ps .panel > footer > .ps-btn, .ps .duo-actions > .ps-btn { flex: 1 1 auto; width: 100%; }
+}
+
+/* ---------- Janelas (modais) no celular: encostadas embaixo, botões empilhados ---------- */
+@media (max-width: 560px) {
+  .ps .ps-scrim { align-items: flex-end !important; padding: 0 !important; }
+  .ps .ps-scrim .ps-modal { max-width: none !important; width: 100%; border-radius: 20px 20px 0 0; max-height: 92vh; display: flex; flex-direction: column; }
+  .ps .ps-scrim .ps-modal > .body { overflow-y: auto; min-height: 0; }
+  .ps .ps-modal header { padding: 20px 18px 0; }
+  .ps .ps-modal h3 { font-size: 18px; }
+  .ps .ps-modal .body { padding: 10px 18px 18px; }
+  .ps .ps-modal > footer { flex-direction: column-reverse; align-items: stretch; padding: 14px 18px calc(14px + env(safe-area-inset-bottom)); }
+  .ps .ps-modal > footer > .ps-btn { width: 100%; }
+  .ps .ps-modal.alta > footer .erro-rodape { order: 99; }
+}
+
+/* ajustes encontrados nos prints de celular */
+@media (max-width: 760px) {
+  .ps .tbl td .ps-badge { white-space: normal; max-width: 100%; text-align: left; }
+  /* abas (Todos, Pendência I…): uma linha só, rolando para o lado */
+  .ps .tabs-bar { flex-wrap: nowrap; overflow-x: auto; gap: 20px; scrollbar-width: none; }
+  .ps .tabs-bar::-webkit-scrollbar { display: none; }
+  .ps .tabs-bar .ps-tab { flex-shrink: 0; white-space: nowrap; }
+}
+
+/* painel lateral estreito (resumo com botões): botões um embaixo do outro, para o texto não estourar */
+@media (max-width: 1280px) {
+  .ps .split > :last-child > footer, .ps .split > :last-child .panel > footer { flex-direction: column-reverse; align-items: stretch; }
+  .ps .split > :last-child > footer > .ps-btn, .ps .split > :last-child .panel > footer > .ps-btn { flex: none; width: 100%; }
+}
+@media (min-width: 561px) and (max-width: 900px) {
+  .ps .split > :last-child > footer, .ps .split > :last-child .panel > footer { flex-direction: row; }
+  .ps .split > :last-child > footer > .ps-btn, .ps .split > :last-child .panel > footer > .ps-btn { flex: 1 1 0; width: auto; }
+  .ps .split > :last-child > footer > .ps-btn.primary, .ps .split > :last-child .panel > footer > .ps-btn.primary { flex-grow: 1.6; }
+}
+
+/* barra compacta no celular e no tablet: só menu, voltar e título (selos e avatar não cabem numa linha com as migalhas) */
+@media (max-width: 1100px) {
+  .ps .page-head.is-compact .ph-title .ps-badge,
+  .ps .page-head.is-compact .ph-title .avatar,
+  .ps .page-head.is-compact .ph-title .info-tip { display: none; }
+  .ps .page-head.is-compact .ph-title > *:not(h1):not(.back-btn):not(.menu-movel):not(.title-row) { min-width: 0; }
+  .ps .page-head.is-compact { max-width: 100vw; box-sizing: border-box; }
+}
+/* sem as migalhas, o título fica à esquerda (a barra usa row-reverse para pôr as migalhas à direita) */
+@media (max-width: 560px) { .ps .page-head.is-compact > .ph-bloco { flex-direction: row; justify-content: flex-start; } }
+
+/* ---------- Telas de acesso (login, esqueci a senha, primeiro acesso) no celular ---------- */
+@media (max-width: 760px) {
+  .ps.auth .auth-hero { flex-basis: 100%; min-width: 0; padding: 32px 20px 48px; }
+  .ps.auth .auth-hero h2 { font-size: clamp(40px, 13vw, 70px) !important; line-height: 1.2; margin: 18px 0 8px; overflow-wrap: anywhere; }
+  .ps.auth .hero-welcome h3 { font-size: 22px !important; }
+  .ps.auth .hero-welcome p { font-size: 16px !important; }
+  .ps.auth .auth-hero ul.passos li { font-size: 17px; }
+  .ps.auth .auth-hero .hero-ilustra { max-width: 320px; }
+  .ps.auth .form-side { flex-basis: 100%; min-width: 0; border-radius: 28px 28px 0 0; margin-top: -24px; padding: 28px 20px 96px; }
+}
+/* tablet em pé: as duas metades do login empilham; o formulário sobe arredondado só em cima */
+@media (min-width: 761px) and (max-width: 1000px) {
+  .ps.auth .auth-hero { flex-basis: 100%; }
+  .ps.auth .form-side { flex-basis: 100%; border-radius: 32px 32px 0 0; margin-top: -24px; padding-bottom: 96px; }
+}
+
+/* Meu perfil no celular (vistos nos prints de 360px) */
+@media (max-width: 560px) {
+  /* rodapé empilhado: ninguém herda a base de largura como altura (o deslize abria um vão enorme) */
+  .ps .panel > footer:not(:has(.ps-pagination)) > * { flex: 0 0 auto; max-width: 100%; }
+  .ps .panel > footer > .ps-results-meta { font-size: 14px !important; }
+  /* botão do cabeçalho do painel não encolhe: desce para a linha de baixo se não couber */
+  .ps .panel > header > .ps-btn { flex: 0 0 auto; }
+  /* texto do deslize cabe na faixa */
+  .slide-txt { font-size: 15px; padding-left: 60px; }
+}

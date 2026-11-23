@@ -4,6 +4,8 @@ const DURACAO = 420;
 const CURVA = 'cubic-bezier(.22,.8,.24,1)';
 // histerese: depois de compactar, só expande alguns pixels acima do ponto
 const FOLGA = 6;
+/** Telas de toque ou estreitas: compacta sem animar (ver alternar). */
+const SEM_FLIP = '(max-width: 1100px), (pointer: coarse)';
 
 /**
  * Cabeçalho que vira uma barra única de vidro ao rolar: o título vai para a
@@ -40,6 +42,8 @@ export function useCabecalhoCompacto(ref: RefObject<HTMLElement | null>) {
         head.classList.add('is-compact');
         alturaCompacta = head.getBoundingClientRect().height;
         head.classList.remove('is-compact');
+        // usado por .resumo-fixo (cards de resumo que acompanham a rolagem)
+        document.documentElement.style.setProperty('--altura-barra', `${Math.round(alturaCompacta)}px`);
       }
       const topoConteudo = primeiro.getBoundingClientRect().top + window.scrollY;
       limiar = Math.max(1, topoConteudo - alturaCompacta);
@@ -68,7 +72,9 @@ export function useCabecalhoCompacto(ref: RefObject<HTMLElement | null>) {
       head.style.marginBottom = `${margemDepois}px`;
       const rH2 = head.getBoundingClientRect();
       compacto = novo;
-      if (!animar || semMovimento) return;
+      // celular/tablet: troca sem a animação FLIP. Animar top/altura do cabeçalho grudado
+      // durante a rolagem por toque fazia o navegador voltar a página para o topo.
+      if (!animar || semMovimento || window.matchMedia(SEM_FLIP).matches) return;
 
       const opcoes: KeyframeAnimationOptions = { duration: DURACAO, easing: CURVA };
       // a caixa do cabeçalho vai da posição/altura de antes para a de depois

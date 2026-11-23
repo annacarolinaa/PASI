@@ -7,9 +7,10 @@ import { useCarregar } from '../hooks';
 import { PageHead, PanelTitle } from '../components/Layout';
 import { useAvisos } from '../components/Avisos';
 import { Estado } from '../components/Estado';
+import { EsqBotoes, EsqCabecalho, EsqItens, EsqKv, EsqPainel, TelaCarregando } from '../components/Esqueleto';
 import { ConfirmaSimples, ItemUnidade, ModalVincular } from '../components/GestaoUnidades';
 import { ModalAcaoUsuario, type AcaoUsuario } from '../components/AcoesUsuario';
-import { D, Ic, IcCadeado, IcCheck, IcInativar, IcMais } from '../components/icons';
+import { D, Ic, IcCadeado, IcCheck, IcEditar, IcEmail, IcInativar, IcMais } from '../components/icons';
 import { cpf, data, dataHora, iniciais, primeiroNome, telefone } from '../lib/format';
 import { ordenarUnidades, SEXOS } from '../lib/perfil';
 import { PERFIS, SITUACOES } from '../lib/usuarios';
@@ -38,7 +39,27 @@ export function UsuarioDetalhe() {
   const avisar = useAvisos();
   const [ocupado, setOcupado] = useState(false);
 
-  if (carregando && !u) return <Estado texto="Carregando usuário…" />;
+  if (carregando && !u)
+    return (
+      <TelaCarregando rotulo="Carregando usuário…">
+        <EsqCabecalho migalhas={3} avatar={48} selos={3} titulo={240} />
+        <div className="page-body">
+          <div className="split">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              <EsqPainel titulo={170}>
+                <EsqKv n={8} />
+              </EsqPainel>
+              <EsqPainel titulo={220} acao>
+                <EsqItens n={2} acoes={2} />
+              </EsqPainel>
+            </div>
+            <EsqPainel titulo={80}>
+              <EsqBotoes n={3} />
+            </EsqPainel>
+          </div>
+        </div>
+      </TelaCarregando>
+    );
   if (erro || !u) return <Estado texto={erro ?? 'Usuário não encontrado.'} erro />;
 
   const perfil = PERFIS[u.id_tipo_usuario] ?? PERFIS[TipoUsuario.PACIENTE];
@@ -99,7 +120,7 @@ export function UsuarioDetalhe() {
 
       <div className="page-body">
         {ehMax && p.somente_leitura && (
-          <div className="ps-alert info">
+          <div className="ps-alert info alerta-sobe">
             <IcCadeado lg style={{ color: 'var(--Link)' }} />
             <div className="body">
               <strong>Somente leitura</strong>
@@ -109,7 +130,7 @@ export function UsuarioDetalhe() {
           </div>
         )}
         {ehP1 && (
-          <div className="ps-alert warning">
+          <div className="ps-alert warning alerta-sobe">
             <Ic d={D.cadeadoAberto} lg style={{ color: 'var(--Warning)' }} />
             <div className="body">
               <strong>Aguardando o primeiro acesso</strong>
@@ -209,7 +230,7 @@ export function UsuarioDetalhe() {
                 <h2>Histórico</h2>
               </header>
               <div className="table-wrap">
-                <table className="tbl" style={{ minWidth: 560 }}>
+                <table className="tbl">
                   <thead>
                     <tr>
                       <th>Data e hora</th>
@@ -227,12 +248,12 @@ export function UsuarioDetalhe() {
                     ) : (
                       u.historico.map((h) => (
                         <tr key={h.id}>
-                          <td className="num">{dataHora(h.data).replace(' às ', ' ')}</td>
-                          <td>
+                          <td className="num" data-rotulo="Data e hora">{dataHora(h.data).replace(' às ', ' ')}</td>
+                          <td className="cel-titulo">
                             <strong style={{ fontWeight: 600 }}>{ACOES_LOG[h.acao] ?? h.acao}</strong>
                             {h.detalhe && <small>{h.detalhe}</small>}
                           </td>
-                          <td>{h.por?.nome ?? '—'}</td>
+                          <td data-rotulo="Por">{h.por?.nome ?? '—'}</td>
                         </tr>
                       ))
                     )}
@@ -242,20 +263,20 @@ export function UsuarioDetalhe() {
             </section>
           </div>
 
-          <aside className="panel">
+          <aside className="panel resumo-fixo acoes-usuario">
             <header>
               <h2>Ações</h2>
             </header>
             <div className="pb">
               {p.reenviar_senha && (
                 <button type="button" className="ps-btn primary block" onClick={() => setJanela({ acao: 'reenviar' })}>
-                  <Ic d="M3 6h18v12H3zM3 7l9 6 9-6" />
+                  <IcEmail />
                   Reenviar senha provisória
                 </button>
               )}
               {p.corrigir_email && (
                 <button type="button" className="ps-btn secondary block" onClick={() => setJanela({ acao: 'email' })}>
-                  <Ic d={D.lapisLinha} />
+                  <IcEditar />
                   Corrigir e-mail
                 </button>
               )}

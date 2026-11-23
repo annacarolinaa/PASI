@@ -4,10 +4,10 @@ import * as atendApi from '../api/atendimentos';
 import type { OrdemAtendimento } from '../api/atendimentos';
 import { mensagemErro } from '../api/client';
 import { SituacaoAtendimento, type Atendimento } from '../api/types';
-import { useAuth } from '../auth/AuthContext';
 import { useAtrasado, useCarregar } from '../hooks';
 import { PageHead } from '../components/Layout';
 import { BarraBusca, LinhaEstado, PainelFiltros, Paginacao } from '../components/Lista';
+import { LinhasEsqueleto } from '../components/Esqueleto';
 import { infoSituacaoAtendimento, SeloAtendimento } from '../components/Situacao';
 import { Modal } from '../components/Modal';
 import { Select } from '../components/Form';
@@ -29,7 +29,6 @@ const F0: Filtros = { situacoes: [], de: '', ate: '', ordem: 'data_desc' };
 
 /** 2.2 Lista de atendimentos (Atendimentos.dc.html). */
 export function Atendimentos() {
-  const { ehMaximo } = useAuth();
   const [busca, setBusca] = useState('');
   const buscaAtrasada = useAtrasado(busca);
   const [pagina, setPagina] = useState(1);
@@ -64,9 +63,8 @@ export function Atendimentos() {
         : `${rasc.situacoes.length} situações selecionadas`;
 
   const total = dados?.total ?? 0;
-  const dica = `${plural(total, 'atendimento encontrado', 'atendimentos encontrados')}. ${
-    ehMaximo ? 'Você vê os atendimentos de todas as unidades.' : 'Você vê os atendimentos das suas unidades.'
-  }`;
+  // digitando (busca ainda não enviada) ou esperando a API: o grid mostra que está buscando
+  const buscando = busca !== buscaAtrasada || carregando;
 
   async function confirmarEncerrar() {
     if (!encerrar) return;
@@ -89,11 +87,9 @@ export function Atendimentos() {
 
   return (
     <>
+      {/* Tela inicial: sem caminho nem "Voltar" */}
       <PageHead
-        migalhas={[{ rotulo: 'Início', para: '/atendimentos' }, { rotulo: 'Atendimentos' }]}
-        voltar="/atendimentos"
         titulo="Atendimentos"
-        dica={carregando && !dados ? undefined : dica}
         acoes={
           <Link className="ps-btn primary" to="/atendimentos/novo">
             <IcMais />
@@ -118,6 +114,7 @@ export function Atendimentos() {
               setMenu(false);
             }}
             nFiltros={nAtivos}
+            buscando={buscando && !!dados}
           />
 
           <PainelFiltros
@@ -216,8 +213,8 @@ export function Atendimentos() {
                 </tr>
               </thead>
               <tbody>
-                {carregando && !dados ? (
-                  <LinhaEstado colunas={7}>Carregando atendimentos…</LinhaEstado>
+                {buscando && !erro ? (
+                  <LinhasEsqueleto colunas={7} rotulo={dados ? 'Buscando atendimentos…' : 'Carregando atendimentos…'} />
                 ) : erro ? (
                   <LinhaEstado colunas={7}>
                     {erro}{' '}
@@ -237,18 +234,18 @@ export function Atendimentos() {
                     const fechado = s === SituacaoAtendimento.ENCERRADO || s === SituacaoAtendimento.INATIVO;
                     return (
                       <tr key={a.id_atendimento}>
-                        <td className="num">{protocolo(a.id_atendimento, a.dt_cadastro)}</td>
-                        <td>
+                        <td className="num" data-rotulo="Protocolo">{protocolo(a.id_atendimento, a.dt_cadastro)}</td>
+                        <td className="cel-titulo" data-rotulo="Paciente">
                           <strong>{pac.nome}</strong>
                           <small>CPF {cpfMascarado(pac.cpf)}</small>
                         </td>
-                        <td style={{ maxWidth: 260, color: 'var(--Text-muted)' }}>{a.descricao || '—'}</td>
-                        <td>{plural(n, 'formulário', 'formulários')}</td>
-                        <td>
+                        <td className="cel-larga" data-rotulo="Descrição" style={{ maxWidth: 260, color: 'var(--Text-muted)' }}>{a.descricao || '—'}</td>
+                        <td data-rotulo="Formulários">{plural(n, 'formulário', 'formulários')}</td>
+                        <td data-rotulo="Situação">
                           <SeloAtendimento id={s} />
                         </td>
-                        <td className="num">{data(a.dt_cadastro)}</td>
-                        <td>
+                        <td className="num" data-rotulo="Cadastro">{data(a.dt_cadastro)}</td>
+                        <td className="cel-acoes">
                           <div className="row-actions">
                             <Link className="act tt" to={`/atendimentos/${a.id_atendimento}`} aria-label="Ver detalhes" data-tip="Ver detalhes">
                               <IcOlhoAcao />

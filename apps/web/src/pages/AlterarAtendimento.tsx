@@ -13,6 +13,7 @@ import { BarraBusca, PainelFiltros } from '../components/Lista';
 import { Modal } from '../components/Modal';
 import { Seg } from '../components/Seg';
 import { Estado } from '../components/Estado';
+import { EsqCabecalho, EsqCampos, EsqEscolhas, EsqItens, EsqPainel, TelaCarregando } from '../components/Esqueleto';
 import { SeloAtendimento, SeloFormulario } from '../components/Situacao';
 import { D, Ic, IcFormulario, IcMais, IcOlhoAcao } from '../components/icons';
 import { cpf, protocolo } from '../lib/format';
@@ -36,7 +37,20 @@ export function AlterarAtendimento() {
     setIdUnidade(a.id_unidade_atendimento ?? '');
   }, [a?.id_atendimento]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (carregando && !a) return <Estado texto="Carregando atendimento…" />;
+  if (carregando && !a)
+    return (
+      <TelaCarregando rotulo="Carregando atendimento…">
+        <EsqCabecalho migalhas={4} selos={1} />
+        <div className="page-body">
+          <EsqPainel titulo={190}>
+            <EsqCampos n={3} />
+          </EsqPainel>
+          <EsqPainel titulo={230} acao>
+            <EsqItens n={2} selos acoes={1} />
+          </EsqPainel>
+        </div>
+      </TelaCarregando>
+    );
   if (erro || !a) return <Estado texto={erro ?? 'Atendimento não encontrado.'} erro />;
 
   const s = a.id_situacao_atendimento;
@@ -304,7 +318,7 @@ function ModalAdicionar({
         </PainelFiltros>
         {erro && <MensagemErro>{erro}</MensagemErro>}
         {!forms ? (
-          <div className="ps-helper">Carregando formulários…</div>
+          <EsqEscolhas n={3} />
         ) : disponiveis.length === 0 ? (
           <div className="ps-helper">Nenhum formulário disponível para adicionar.</div>
         ) : (

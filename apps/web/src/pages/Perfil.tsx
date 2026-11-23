@@ -10,7 +10,8 @@ import { Seg } from '../components/Seg';
 import { Modal } from '../components/Modal';
 import { useAvisos } from '../components/Avisos';
 import { ConfirmaSimples, ItemUnidade, ModalVincular } from '../components/GestaoUnidades';
-import { IcCadeado, IcInfo, IcMais } from '../components/icons';
+import { IcInfo, IcMais } from '../components/icons';
+import { resetarSlides, Slide } from '../components/Slide';
 import { cpfMascarado, iniciais, soDigitos, telefone } from '../lib/format';
 import { ordenarUnidades, SEXOS } from '../lib/perfil';
 import { criteriosSenha } from '../lib/senha';
@@ -102,6 +103,8 @@ export function Perfil() {
       setErroSenha(mensagemErro(e));
     } finally {
       setTrocando(false);
+      // o puxador do "deslize para alterar" volta ao início (erro, ou senha já trocada)
+      resetarSlides();
     }
   }
 
@@ -305,17 +308,16 @@ export function Perfil() {
             <span className="ps-results-meta" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 17 }}>
               <IcInfo style={{ width: 18, height: 18, color: 'var(--Link)' }} />A nova senha vale a partir do próximo login.
             </span>
-            <button
-              type="button"
-              className="ps-btn primary"
-              aria-disabled={!pode}
-              data-tip={pode ? '' : 'Preencha a senha atual e atenda a todos os critérios'}
-              onClick={() => void trocarSenha()}
-              aria-busy={trocando}
-            >
-              <IcCadeado />
-              {trocando ? 'Alterando…' : 'Alterar senha'}
-            </button>
+            <Slide
+              classeExtra="confirm-slide"
+              texto={trocando ? 'Alterando…' : 'Deslize para alterar a senha'}
+              rotuloAcessivel="Deslize para alterar a senha"
+              liberado={pode && !trocando}
+              dicaBloqueado="Preencha a senha atual e atenda a todos os critérios"
+              ajuda={pode ? 'Arraste até o fim para alterar. No teclado, use as setas.' : 'Preencha a senha atual e atenda a todos os critérios para liberar.'}
+              rotuloBotao="Alterar senha"
+              aoConcluir={() => void trocarSenha()}
+            />
           </footer>
         </section>
       </div>

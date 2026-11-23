@@ -46,7 +46,7 @@ export function EsqueceuSenhaScreen() {
           <View className="items-center pb-4">
             <Image
               source={require('../../assets/logo.png')}
-              style={{ width: 130, height: 130 }}
+              style={{ width: 180, height: 65 }}
               resizeMode="contain"
             />
           </View>

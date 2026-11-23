@@ -3,17 +3,8 @@ import api from '../config/api';
 export interface LoginPayload {
   login: string;
   senha: string;
-}
-
-export interface CadastroProfissionalPayload {
-  nome: string;
-  cpf: string;
-  email: string;
-  tel_celular: string;
-  sexo: string;
-  id_profissao: number;
-  id_unidade_atendimento: number;
-  senha: string;
+  /** 'app' faz a API recusar quem não é paciente (profissional usa o painel web). */
+  canal?: 'web' | 'app';
 }
 
 export interface CadastroPacientePayload {
@@ -39,9 +30,6 @@ export interface CadastroPacientePayload {
 export const authService = {
   login: (payload: LoginPayload) =>
     api.post('/auth/login', payload).then((r) => r.data),
-
-  cadastrarProfissional: (payload: CadastroProfissionalPayload) =>
-    api.post('/usuarios/profissional', payload).then((r) => r.data),
 
   cadastrarPaciente: (payload: CadastroPacientePayload) =>
     api.post('/usuarios/paciente', payload).then((r) => r.data),

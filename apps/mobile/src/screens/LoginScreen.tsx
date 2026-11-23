@@ -38,7 +38,7 @@ export function LoginScreen() {
     if (!validate()) return;
     setLoading(true);
     try {
-      const result = await authService.login({ login: login.trim(), senha });
+      const result = await authService.login({ login: login.trim(), senha, canal: 'app' });
       await authLogin(result.access_token, {
         id_usuario: result.usuario.id_usuario,
         nome: result.usuario.nome,
@@ -68,8 +68,9 @@ export function LoginScreen() {
         <View className="bg-primary items-center pt-16 pb-10 px-6 rounded-b-3xl">
           <Image
             source={require('../../assets/logo.png')}
-            style={{ width: 150, height: 150 }}
+            style={{ width: 200, height: 72 }}
             resizeMode="contain"
+            accessibilityLabel="PASI"
           />
         </View>
 
@@ -115,7 +116,7 @@ export function LoginScreen() {
 
           <PrimaryButton
             label="Cadastre-se"
-            onPress={() => navigation.navigate('SelectProfile')}
+            onPress={() => navigation.navigate('CadastroPaciente')}
             variant="outlined"
           />
         </View>

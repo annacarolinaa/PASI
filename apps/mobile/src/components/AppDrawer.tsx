@@ -26,13 +26,7 @@ interface MenuItem {
   route: string;
 }
 
-const MENU_PROFISSIONAL: MenuItem[] = [
-  { label: 'Atendimentos', icon: 'event-note', route: 'AtendimentosList' },
-  { label: 'Formulários', icon: 'description', route: 'FormulariosList' },
-  { label: 'Meu Perfil', icon: 'person', route: 'Perfil' },
-];
-
-const MENU_PACIENTE: MenuItem[] = [
+const MENU: MenuItem[] = [
   { label: 'Meus Atendimentos', icon: 'event-note', route: 'MeusAtendimentos' },
   { label: 'Meu Perfil', icon: 'person', route: 'Perfil' },
 ];
@@ -78,9 +72,6 @@ export function AppDrawer() {
 
   if (!mounted) return null;
 
-  const isProfissional = usuario?.tipo === 1;
-  const itens = isProfissional ? MENU_PROFISSIONAL : MENU_PACIENTE;
-
   const irPara = (route: string) => {
     closeDrawer();
     // pequena espera para a animação de fechar não competir com a transição de tela
@@ -122,7 +113,7 @@ export function AppDrawer() {
         <View className="bg-primary px-5" style={{ paddingTop: Math.max(insets.top, 16), paddingBottom: 24 }}>
           <View className="flex-row items-center justify-between mb-2">
             <Text className="text-white/80 text-xs font-semibold uppercase tracking-wider">
-              {isProfissional ? 'Profissional' : 'Paciente'}
+              Paciente
             </Text>
             <TouchableOpacity onPress={closeDrawer} className="w-8 h-8 items-center justify-center">
               <MaterialIcons name="close" size={22} color="white" />
@@ -154,7 +145,7 @@ export function AppDrawer() {
 
         {/* Itens de menu */}
         <ScrollView className="flex-1" contentContainerStyle={{ paddingVertical: 12 }}>
-          {itens.map((item) => (
+          {MENU.map((item) => (
             <TouchableOpacity
               key={item.route}
               onPress={() => irPara(item.route)}
@@ -167,8 +158,12 @@ export function AppDrawer() {
           ))}
         </ScrollView>
 
-        {/* Rodapé — Sair */}
-        <View className="border-t border-border px-5 py-4">
+        {/* Rodapé — Sair. O padding inferior respeita a barra de navegação do
+            Android (edge-to-edge), senão o botão fica atrás dela. */}
+        <View
+          className="border-t border-border px-5 pt-4"
+          style={{ paddingBottom: insets.bottom + 16 }}
+        >
           <TouchableOpacity
             onPress={handleLogout}
             className="flex-row items-center"

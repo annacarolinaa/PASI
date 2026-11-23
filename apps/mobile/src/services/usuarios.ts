@@ -19,8 +19,6 @@ export interface UsuarioCompleto {
   cidade?: string | null;
   estado?: string | null;
   pais?: string | null;
-  id_profissao?: number | null;
-  id_unidade_atendimento?: number | null;
   dt_cadastro?: string | null;
 }
 

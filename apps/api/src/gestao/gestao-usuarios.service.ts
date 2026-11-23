@@ -3,6 +3,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
@@ -43,6 +44,8 @@ type UsuarioBase = {
  */
 @Injectable()
 export class GestaoUsuariosService {
+  private readonly logger = new Logger(GestaoUsuariosService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly mail: MailService,
@@ -217,6 +220,9 @@ export class GestaoUsuariosService {
     const expira = expiracaoSenhaProvisoria();
     const tipo = dto.perfil === 'maximo' ? TipoUsuario.MAXIMO : TipoUsuario.INTERMEDIARIO;
     const sede = dto.unidades.find((x) => x.sede)!;
+    // bcrypt fora da transação: com o banco "acordando" (Neon free), a transação
+    // interativa passava do limite de tempo do Prisma.
+    const senha_hash = await hashSenha(senha);
 
     let criado: { id_usuario: number; nome: string; email: string };
     try {
@@ -233,7 +239,7 @@ export class GestaoUsuariosService {
             sexo: dto.sexo,
             profissao: { connect: { id_profissao: dto.id_profissao } },
             ...(dto.id_genero ? { genero: { connect: { id_genero: dto.id_genero } } } : {}),
-            senha_hash: await hashSenha(senha),
+            senha_hash,
             senha_provisoria_expira_em: expira,
           },
           select: { id_usuario: true, nome: true, email: true },
@@ -264,9 +270,15 @@ export class GestaoUsuariosService {
       throw this.tratarErroUnico(e);
     }
 
+    // Daqui em diante o cadastro já está salvo: nada abaixo pode virar erro 500,
+    // senão a tela mostra falha e uma nova tentativa esbarra no CPF já cadastrado.
     const emailEnviado = await this.mail.enviarSenhaProvisoria(criado.email, criado.nome, senha, expira);
+    const usuario = await this.detalhar(criado.id_usuario, user).catch((e: unknown) => {
+      this.logger.error(`Cadastro ${criado.id_usuario} salvo, mas o detalhe falhou: ${(e as Error).message}`);
+      return null;
+    });
     return {
-      usuario: await this.detalhar(criado.id_usuario, user),
+      usuario,
       email_enviado: emailEnviado,
       senha_provisoria_expira_em: expira,
     };

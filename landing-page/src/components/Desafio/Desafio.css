@@ -104,6 +104,24 @@
     transition: opacity 0.45s ease, transform 0.45s ease, box-shadow 0.45s ease;
  }
 
+/* Foto do desafio: fica nítida na parte de cima do card (a pessoa e a cena aparecem
+   inteiras) e só a borda de baixo se dissolve no azul-marinho do card, onde fica o
+   texto. O enquadramento de cada foto vem do Desafio.tsx (object-position). */
+.desafio-card-art {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 64%;
+    object-fit: cover;
+    pointer-events: none;
+    user-select: none;
+    -webkit-mask-image: linear-gradient(to bottom, #000 62%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 62%, transparent 100%);
+}
+
+.desafio-card-number { text-shadow: 0 1px 6px rgba(10, 20, 40, 0.55); }
+
 .desafio-card-content {
     position: absolute;
     inset: 0;
